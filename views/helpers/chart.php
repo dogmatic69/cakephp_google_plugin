@@ -192,13 +192,15 @@
                 'code' => '',
                 'seperator' => ''
             ),
-            'solid_fill' => array(
+            'solid_fill' => array(  //done
                 'code' => 'chf=',
-                'format' => '%s,%s,%s' //type,style,color
+                'format' => '%s,%s,%s', //type,style,color
+                'seperator' => '|'
             ),
             'gradient_file' => array( //gradient and lines ... offset == width
                 'code' => 'chf=',
-                'format' => '%s,%s,%d,%s,%f' //type,style,angle,color,offset
+                'format' => '%s,%s,%d,%s,%f', //type,style,angle,color,offset
+                'seperator' => '|'
             ),
             'special_fill' => array(
                 'code' => '',
@@ -263,7 +265,6 @@
 
             foreach( $data as $key => $value )
             {
-                pr( $key );
                 if ( !isset( $this->setup[$name][$key] ) )
                 {
                     $this->errors = __( 'Param "'.$key.'" is not supported in chart type "'.$name.'"', true );
@@ -289,10 +290,70 @@
                         $this->__setTitle( $value );
                         break;
 
+                    case 'fill':
+                        $this->__setFill( $key, $value );
+                        break;
+
+
                 } // switch
             }
 
             return $this->__render( $data );
+        }
+
+        function __setFill( $key, $data )
+        {
+            if ( !isset( $data[0] ) )
+            {
+                $data = array( $data );
+            }
+
+            foreach( $data as $k => $fill )
+            {
+                switch( $fill['position'] )
+                {
+                    case 'background':
+                        $param[$k][] = 'bg';
+                        break;
+
+                    case 'chart':
+                        $param[$k][] = 'c';
+                        break;
+
+                    case 'transparency':
+                        $param[$k][] = 'a';
+                        break;
+                } // switch
+
+                switch( $fill['type'] )
+                {
+                    case 'solid':
+                        $param[$k][] = 's';
+                        break;
+                } // switch
+
+                if ( !isset( $fill['color'] ) )
+                {
+                    unset( $param[$k] );
+                }
+                else
+                {
+                    $param[$k][] = $fill['color'];
+                }
+
+                if ( isset( $param[$k] ) )
+                {
+                    if ( count( $param[$k] == 3 ) )
+                    {
+                        $key = 'solid_fill';
+                        $param[$k] = array_values( $param[$k] );
+                        $param[$k] = sprintf( $this->map['solid_fill']['format'], $param[$k][0], $param[$k][1], $param[$k][2] );
+                    }
+                }
+            }
+
+            $this->__setReturn( $key, $param );
+
         }
 
         function __setOrientaion( $value )
@@ -347,10 +408,14 @@
                 }
             }
 
-            return $this->Html->image(
+            $graph = $this->Html->image(
                 $this->apiUrl.implode( $this->paramSeperator,$this->return ),
                 $data['html']
             );
+
+            $this->return = null;
+
+            return $graph;
         }
 
         function __setSize( $data )
