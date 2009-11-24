@@ -111,6 +111,306 @@
             )
         );
 
+        var $setup = array(
+            'pie3d' => array(
+                //required
+                'data' => true,
+                'labels' => true,
+                'size' =>  true,
+
+                //optional
+                'colors' => true,
+                'fill' => array(
+                    'type' => true,
+                    'color' => true,
+                    'angle' => true,
+                    'offset' => true,
+                ),//file
+                'scale' => array(
+                    0 => array(
+                        'min' => true,
+                        'max' => true
+                    )
+                ),//scale
+                'title' =>array(
+                    'text' => true,
+                    'color' => true,
+                    'size' => true
+                ),//title
+                'legend' => array(
+                    'labels' => true,
+                    'position' => array(
+                        'horizontal' => true,
+                        'vertical' => true
+                    )
+                ),//legend
+                'orientation' => true
+            )
+        );
+
+        var $chartTypes = array(
+            //pie charts
+                'pie2d'      => 'cht=p',
+                'pie3d'      => 'cht=p3',
+                'concentric' => 'cht=pc',
+            //bar charts
+                'bar'        => 'cht=bhs',
+
+            //line charts
+                'line'       => 'cht=lc',
+                'spark'      => 'cht=ls',
+                'compare'    => 'cht=lxy',
+
+            // radar
+                'radar'      => 'cht=r',
+                //'radar_fill' => 'cht=rs',
+
+            // other
+                'scatter'    => 'cht=s',
+                'venn'       => 'cht=v',
+
+            // special
+                'meter'      => 'cht=gom',
+                'map'        => 'cht=t',
+                'qr_code'    => 'cht=qr'
+        );
+
+        var $map = array(
+            'data' => array(
+                'code' => 'chd=t:',
+                'seperator' => ','
+            ),
+            'labels' => array(
+                'code' => 'chl=',
+                'seperator' => '|'
+            ),
+            'size' => array(
+                'code' => 'chs=',
+                'seperator' => 'x'
+            ),
+            'colors' => array(
+                'code' => '',
+                'seperator' => ''
+            ),
+            'solid_fill' => array(
+                'code' => 'chf=',
+                'format' => '%s,%s,%s' //type,style,color
+            ),
+            'gradient_file' => array( //gradient and lines ... offset == width
+                'code' => 'chf=',
+                'format' => '%s,%s,%d,%s,%f' //type,style,angle,color,offset
+            ),
+            'special_fill' => array(
+                'code' => '',
+                'format' => ''
+            ),
+            'scale' => array(
+                'code' => '',
+                'seperator' => ''
+            ),
+            'title' => array(
+                'code' => 'chtt=',
+                'seperator' => '+'
+            ),
+            'legend' => array(
+                'code' => '',
+                'seperator' => ''
+            )
+        );
+
+        var $errors = null;
+
+        var $return = null;
+
+        var $paramSeperator = '&';
+
+        var $maxSize = 300000;
+
+        var $apiUrl = 'http://chart.apis.google.com/chart?';
+
+        function test( $name = 'pie3d' )
+        {
+            switch( $name )
+            {
+                case 'pie3d':
+                    return '<img border="0" alt="Yellow pie chart" src="http://chart.apis.google.com/chart?chs=250x100&chd=t:60,40&cht=p3&chl=Hello|World"/>';
+                    break;
+
+                case 'pie':
+                    ;
+                    break;
+
+                default:
+                    ;
+            } // switch
+        }
+
+        function display( $name = null, $data = array() )
+        {
+            if ( empty( $data ) )
+            {
+                return false;
+            }
+
+            $this->__setChartType( $name );
+
+            foreach( $data as $key => $value )
+            {
+                pr( $key );
+                if ( !isset( $this->setup[$name][$key] ) )
+                {
+                    $this->errors = __( 'Param "'.$key.'" is not supported in chart type "'.$name.'"', true );
+                    continue;
+                }
+
+                switch( $key )
+                {
+                    case 'data':
+                    case 'labels':
+                        $this->__setData( $key, $value );
+                        break;
+
+                    case 'size':
+                        $this->__setSize( $value );
+                        break;
+
+                    case 'title':
+                        $this->__setTitle( $value );
+                        break;
+
+                } // switch
+            }
+
+            return $this->__render( $data );
+        }
+
+        function __setTitle( $title )
+        {
+            if ( is_array( $title ) )
+            {
+
+            }
+
+            else
+            {
+                $title = str_replace( '<br/>', '|', $title );
+                $this->__setData( 'title', explode( ' ', $title ) );
+            }
+        }
+
+        function __render( $data )
+        {
+            $data['html'] = array();
+            if ( !isset( $data['html']['title'] ) && isset( $data['title'] ) )
+            {
+                if ( !is_array( $data['title'] ) )
+                {
+                    $data['html']['title'] = $data['title'];
+                }
+                else if ( is_array( $data['title']['text'] ) )
+                {
+                    $data['html']['title'] = $data['title']['text'];
+                }
+            }
+
+            return $this->Html->image(
+                $this->apiUrl.implode( $this->paramSeperator,$this->return ),
+                $data['html']
+            );
+        }
+
+        function __setSize( $data )
+        {
+            if ( !is_array( $data ) )
+            {
+                $data = explode( ',', $data, 3 );
+            }
+
+            if ( $data[0] * $data[1] > $this->maxSize )
+            {
+                $this->erros[] = __( 'Sizes exceed the maximum for google charts api', true );
+                $data = array( 100, 100 );
+            }
+
+            return $this->__setReturn( 'size', $data );
+        }
+
+        function __setData( $key, $data )
+        {
+            if ( !is_array( $data ) )
+            {
+                $data = explode( ',', $data );
+            }
+
+            return $this->__setReturn( $key, $data );
+        }
+
+        function __setReturn( $key, $data )
+        {
+
+            $return = $this->map[$key]['code'];
+
+            if ( isset( $this->map[$key]['seperator'] ) )
+            {
+                $return .= implode( $this->map[$key]['seperator'], $data );
+            }
+
+            $this->return[] = $return;
+            return true;
+
+        }
+
+        /**
+         * ChartHelper::__setChart()
+         *
+         * checks that the name passed in is part of the valid charts that can be drawn.
+         * saves the data to the $this->return
+         *
+         * @param string $name
+         * @retrun bool
+         */
+        function __setChartType( $name )
+        {
+            if ( !in_array( $name, array_flip( $this->chartTypes ) ) )
+            {
+                $this->errors[] = __( 'Incorect chart type', true );
+                return false;
+            }
+
+            $this->return[] = $this->chartTypes[$name];
+            return true;
+        }
+
+        function __autoColor()
+        {
+
+        }
+
+        function __autoScale()
+        {
+
+        }
+
+        function encode( $data = array(), $type = 't' )
+        {
+            if ( !is_array( $data ) )
+            {
+                $data = array( $data );
+            }
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
         function map(  $type = 'world', $size = 'large', $data = null )
         {
             $chart = $this->settings['charts']['map'];
