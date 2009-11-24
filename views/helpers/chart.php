@@ -176,15 +176,15 @@
         );
 
         var $map = array(
-            'data' => array(
+            'data' => array(          //done
                 'code' => 'chd=t:',
                 'seperator' => ','
             ),
-            'labels' => array(
+            'labels' => array(       //done
                 'code' => 'chl=',
                 'seperator' => '|'
             ),
-            'size' => array(
+            'size' => array(         //done
                 'code' => 'chs=',
                 'seperator' => 'x'
             ),
@@ -208,17 +208,20 @@
                 'code' => '',
                 'seperator' => ''
             ),
-            'title' => array(
+            'title' => array(         //done
                 'code' => 'chtt=',
                 'seperator' => '+'
             ),
-            'title_color' => array(
+            'title_color' => array(   //done
                 'code' => 'chts=',
                 'seperator' => ','
             ),
             'legend' => array(
                 'code' => '',
                 'seperator' => ''
+            ),
+            'orientation' => array(
+                'code' => 'chp='
             )
         );
 
@@ -274,6 +277,10 @@
                         $this->__setData( $key, $value );
                         break;
 
+                    case 'orientation':
+                        $this->__setOrientaion( $value );
+                        break;
+
                     case 'size':
                         $this->__setSize( $value );
                         break;
@@ -288,6 +295,11 @@
             return $this->__render( $data );
         }
 
+        function __setOrientaion( $value )
+        {
+            $this->__setData( 'orientation', round( ( ( (float)$value * pi() ) / 180 ), 3 ) );
+        }
+
         function __setTitle( $title )
         {
             if ( is_array( $title ) && isset( $title['text'] ) )
@@ -298,15 +310,14 @@
                     $params[] = $title['color'];
                 }
 
-
-                if ( empty( $params ) )
-                {
-                    $params[] = '4F4F4F';
-                }
-
                 if ( isset( $title['size'] ) )
                 {
-                    $params[] = $title['size'];
+                    if ( empty( $params ) )
+                    {
+                        $params[] = '4F4F4F';
+                        $this->errors[] = __( 'No color was set, adding a default', true );
+                    }
+                    $params[] = (int)$title['size'];
                 }
 
                 $title = str_replace( '<br/>', '|', $title['text'] );
@@ -376,6 +387,10 @@
             if ( isset( $this->map[$key]['seperator'] ) )
             {
                 $return .= implode( $this->map[$key]['seperator'], $data );
+            }
+            else
+            {
+                $return .= implode( '', $data );
             }
 
             $this->return[] = $return;
