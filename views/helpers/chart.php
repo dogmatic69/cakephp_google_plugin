@@ -212,6 +212,10 @@
                 'code' => 'chtt=',
                 'seperator' => '+'
             ),
+            'title_color' => array(
+                'code' => 'chts=',
+                'seperator' => ','
+            ),
             'legend' => array(
                 'code' => '',
                 'seperator' => ''
@@ -286,16 +290,35 @@
 
         function __setTitle( $title )
         {
-            if ( is_array( $title ) )
+            if ( is_array( $title ) && isset( $title['text'] ) )
             {
+                $params = array();
+                if ( isset( $title['color'] ) )
+                {
+                    $params[] = $title['color'];
+                }
+
+
+                if ( empty( $params ) )
+                {
+                    $params[] = '4F4F4F';
+                }
+
+                if ( isset( $title['size'] ) )
+                {
+                    $params[] = $title['size'];
+                }
+
+                $title = str_replace( '<br/>', '|', $title['text'] );
+                $this->__setData( 'title_color', $params );
 
             }
 
             else
             {
                 $title = str_replace( '<br/>', '|', $title );
-                $this->__setData( 'title', explode( ' ', $title ) );
             }
+            $this->__setData( 'title', explode( ' ', $title ) );
         }
 
         function __render( $data )
