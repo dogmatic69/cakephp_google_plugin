@@ -1,153 +1,143 @@
 <?php
     /**
+     * Google Charts Helper class file.
      *
+     * Simplifies creating charts with the google charts api.
      *
-     * @version $Id$
-     * @copyright 2009
+     * Copyright (c) 2009 Carl Sutton ( dogmatic69 )
+     *
+     * Licensed under The MIT License
+     * Redistributions of files must retain the above copyright notice.
+     *
+     * @filesource
+     * @copyright     Copyright (c) 2009 Carl Sutton ( dogmatic69 )
+     * @link          http://www.dogmatic.co.za
+     * @package       google
+     * @subpackage    google.views.helpers.chart
+     * @license       http://www.opensource.org/licenses/mit-license.php The MIT License
      */
     class ChartHelper extends AppHelper
     {
         var $helpers = array( 'Html', 'Session', 'Number' );
 
+        /**
+         * Country codes by continent.
+         *
+         * This is used by the chart helper to generate maps.
+         *
+         * @var array
+         * @access public
+         */
         var $country_to_continent = array(
             'Africa' => array(
-                'KM', 'GW', 'KE', 'NA', 'LS', 'LR', 'LY', 'MG', 'MW', 'ML', 'GN', 'GH',
-                'CG', 'CI', 'DJ', 'EG', 'GQ', 'ER', 'ET', 'GA', 'GM', 'MR', 'MU', 'YT',
-                'SO', 'ZA', 'SD', 'SZ', 'TZ', 'TG', 'TN', 'UG', 'EH', 'SL', 'SC', 'MA',
-                'MZ', 'NE', 'NG', 'RE', 'RW', 'SH', 'ST', 'SN', 'ZM', 'BF', 'BI', 'BJ',
-                'AO', 'CM', 'CV', 'ZW', 'DZ', 'BW', 'TD', 'CF'
+                'KM', 'GW', 'KE', 'NA', 'LS', 'LR', 'LY', 'MG', 'MW', 'ML',
+                'GN', 'GH', 'CG', 'CI', 'DJ', 'EG', 'GQ', 'ER', 'ET', 'GA',
+                'GM', 'MR', 'MU', 'YT', 'SO', 'ZA', 'SD', 'SZ', 'TZ', 'TG',
+                'TN', 'UG', 'EH', 'SL', 'SC', 'MA', 'MZ', 'NE', 'NG', 'RE',
+                'RW', 'SH', 'ST', 'SN', 'ZM', 'BF', 'BI', 'BJ', 'AO', 'CM',
+                'CV', 'ZW', 'DZ', 'BW', 'TD', 'CF'
             ),
             'Antarctica' => array(
                 'GS', 'HM', 'AQ', 'TF', 'BV'
             ),
             'Asia' => array(
-               'IO', 'AM', 'ID', 'SG', 'KP', 'MM', 'JO', 'JP', 'IN', 'IL', 'BD', 'PK',
-               'PH', 'NP', 'BN', 'MN', 'LB', 'HK', 'GE', 'TL', 'KR', 'CY', 'UZ', 'VN',
-               'MO', 'TH', 'MY', 'LA', 'KH', 'CC', 'TW', 'KG', 'LK', 'CX', 'MV', 'CN',
-               'BT'
+               'IO', 'AM', 'ID', 'SG', 'KP', 'MM', 'JO', 'JP', 'IN', 'IL',
+               'BD', 'PK', 'PH', 'NP', 'BN', 'MN', 'LB', 'HK', 'GE', 'TL',
+               'KR', 'CY', 'UZ', 'VN', 'MO', 'TH', 'MY', 'LA', 'KH', 'CC',
+               'TW', 'KG', 'LK', 'CX', 'MV', 'CN', 'BT'
             ),
             'Europe' => array(
-                'MK', 'MC', 'AL', 'BE', 'MT', 'MD', 'ME', 'BY', 'ES', 'SJ', 'SE', 'CH',
-                'AD', 'FO', 'TR', 'UA', 'GB', 'SI', 'SK', 'NL', 'NO', 'PL', 'PT', 'RO',
-                'RU', 'AT', 'SM', 'RS', 'AX', 'LU', 'LT', 'FI', 'IT', 'IM', 'IE', 'FR',
-                'HR', 'GR', 'IS', 'VA', 'HU', 'GI', 'DE', 'BG', 'LV', 'JE', 'BA', 'EE',
-                'GG', 'LI', 'DK', 'CZ'
+                'MK', 'MC', 'AL', 'BE', 'MT', 'MD', 'ME', 'BY', 'ES', 'SJ',
+                'SE', 'CH', 'AD', 'FO', 'TR', 'UA', 'GB', 'SI', 'SK', 'NL',
+                'NO', 'PL', 'PT', 'RO', 'RU', 'AT', 'SM', 'RS', 'AX', 'LU',
+                'LT', 'FI', 'IT', 'IM', 'IE', 'FR', 'HR', 'GR', 'IS', 'VA',
+                'HU', 'GI', 'DE', 'BG', 'LV', 'JE', 'BA', 'EE', 'GG', 'LI',
+                'DK', 'CZ'
             ),
             'ME' => array(
-                'PS', 'OM', 'QA', 'AZ', 'AE', 'TM', 'SA', 'AF', 'KZ', 'SY', 'TJ', 'YE',
-                'IQ', 'IR', 'KW', 'BH'
+                'PS', 'OM', 'QA', 'AZ', 'AE', 'TM', 'SA', 'AF', 'KZ', 'SY',
+                'TJ', 'YE', 'IQ', 'IR', 'KW', 'BH'
             ),
             'North America' => array(
-                'GD', 'GP', 'KN', 'DM', 'PM', 'VC', 'AG', 'DO', 'AW', 'AI', 'SV', 'GL',
-                'CA', 'TT', 'KY', 'BS', 'US', 'HN', 'AN', 'BB', 'MS', 'JM', 'MX', 'BZ',
-                'MQ', 'BM', 'NI', 'CR', 'TC', 'LC', 'VG', 'PA', 'GT', 'VI', 'CU', 'HT',
-                'PR'
+                'GD', 'GP', 'KN', 'DM', 'PM', 'VC', 'AG', 'DO', 'AW', 'AI',
+                'SV', 'GL', 'CA', 'TT', 'KY', 'BS', 'US', 'HN', 'AN', 'BB',
+                'MS', 'JM', 'MX', 'BZ', 'MQ', 'BM', 'NI', 'CR', 'TC', 'LC',
+                'VG', 'PA', 'GT', 'VI', 'CU', 'HT', 'PR'
             ),
             'Oceania' => array(
-                'WF', 'TK', 'VU', 'TV', 'CK', 'AS', 'UM', 'TO', 'NR', 'PN', 'PG', 'PW',
-                'FM', 'MP', 'NF', 'NU', 'NZ', 'NC', 'GU', 'SB', 'FJ', 'KI', 'MH', 'PF',
-                'AU', 'WS'
+                'WF', 'TK', 'VU', 'TV', 'CK', 'AS', 'UM', 'TO', 'NR', 'PN',
+                'PG', 'PW', 'FM', 'MP', 'NF', 'NU', 'NZ', 'NC', 'GU', 'SB',
+                'FJ', 'KI', 'MH', 'PF', 'AU', 'WS'
             ),
             'South America' => array(
-                'CL', 'CO', 'VE', 'BO', 'FK', 'UY', 'GY', 'PE', 'AR', 'BR', 'PY', 'GF',
-                'SR', 'EC'
+                'CL', 'CO', 'VE', 'BO', 'FK', 'UY', 'GY', 'PE', 'AR', 'BR',
+                'PY', 'GF', 'SR', 'EC'
             )
         );
 
-        var $settings = array(
-            'api_address' => 'http://chart.apis.google.com/chart?',
-            'size' => array(
-                'width'  => 300,
-                'height' => 300,
-                'name'   => 'chs='
-            ),
-            'charts' => array(
-                'meter' => array(
-                    'name'  => 'cht=gom',
-                    'data'  => 'chd=t:',
-                    'label' => 'chl='
-                ),
-                'sparkline' => array(
-                    'name'   => 'cht=ls',
-                    'color'  => 'chco=',
-                    'data'   => 'chd=t:',
-                    'labels' => array(
-                        'axis'  => array(
-                            'name'  => 'chxt=',
-                            'where' => array( 'x', 'y' )
-                        ),
-                        'label' => array(
-                            'name' => 'chxl=',
-                            'data' => array()
-                        ),
-                    ),
-                ),
-                'pie' => array(
-                    'name'  => 'cht=p3',
-                    'data'  => 'chd=t:',
-                    'label' => 'chl='
-                ),
-                'map' => array(
-                    'type'  => array(
-                        'name' => 'chtm=',
-                        'type' => 'world'
-                    ),
-                    'colors' => array(
-                        'name' => 'chco=',
-                        'seperator' => ','
-                    ),
-                    'places' => array(
-                        'name' => 'chld=',
-                        'seperator' => ''
-                    ),
-                    'data' => array(
-                        'name' => 'chd=t:',
-                        'seperator' => ','
-                    ),
-                    'size' => array(
-                        'name' => 'chs='
-                    )
-                )
-            )
-        );
-
+        /**
+         * Setting up charts.
+         *
+         * This setup decides what values can and cant be drawn with the helper. It stops you from
+         * submitting params for graphs that are not ment to be there.  If there is something that is
+         * not showing in your graph check Chart::debug as it alert you if you added something that is
+         * not supported.
+         *
+         * @var array
+         * @access public
+         */
         var $setup = array(
             'pie3d' => array(
                 //required
-                'data' => true,
-                'labels' => true,
-                'size' =>  true,
-
+                    'data' => true, 'labels' => true, 'size' =>  true,
                 //optional
-                'colors' => true,
-                'fill' => array(
-                    'type' => true,
-                    'color' => true,
-                    'angle' => true,
-                    'offset' => true,
-                ),//file
-                'scale' => array(
-                    0 => array(
-                        'min' => true,
-                        'max' => true
-                    )
-                ),//scale
-                'title' =>array(
-                    'text' => true,
-                    'color' => true,
-                    'size' => true
-                ),//title
-                'legend' => array(
-                    'labels' => true,
-                    'position' => array(
-                        'horizontal' => true,
-                        'vertical' => true
-                    )
-                ),//legend
-                'orientation' => true
+                    'colors' => true,
+                    'fill' => array( 'type' => true, 'color' => true, 'angle' => true, 'offset' => true, ),
+                    'scale' => array( 0 => array( 'min' => true, 'max' => true ) ),
+                    'title' =>array( 'text' => true, 'color' => true, 'size' => true ),
+                    'legend' => array(
+                        'labels' => true,
+                        'position' => array( 'horizontal' => true, 'vertical' => true )
+                    ),
+                    'orientation' => true
+            ),
+            'pie2d' => array(
+                //required
+                    'data' => true, 'labels' => true, 'size' =>  true,
+                //optional
+                    'colors' => true,
+                    'fill' => array( 'type' => true, 'color' => true, 'angle' => true, 'offset' => true, ),
+                    'scale' => array( 0 => array( 'min' => true, 'max' => true ) ),
+                    'title' =>array( 'text' => true, 'color' => true, 'size' => true ),
+                    'legend' => array(
+                        'labels' => true,
+                        'position' => array( 'horizontal' => true, 'vertical' => true )
+                    ),
+                    'orientation' => true
+            ),
+
+
+
+            'bar' => array(
+                //required
+                'data' => true, 'labels' => true, 'size' =>  true,
+            ),
+
+
+
+            'line' => array(
+                //required
+                'data' => true, 'labels' => true, 'size' =>  true,
             )
         );
-
+        /**
+         * Map from names to codes.
+         *
+         * This is used to generat the maps based on a friendly name.
+         *
+         * @var array
+         * @access public
+         */
         var $chartTypes = array(
             //pie charts
                 'pie2d'      => 'cht=p',
@@ -175,6 +165,15 @@
                 'qr_code'    => 'cht=qr'
         );
 
+        /**
+         * Map names to code.
+         *
+         * this is used to conver the english names used in the helper to
+         * the codes needed by google to create the graph.
+         *
+         * @var array
+         * @access public
+         */
         var $map = array(
             'data' => array(          //done
                 'code' => 'chd=t:',
@@ -227,17 +226,66 @@
             )
         );
 
-        var $errors = null;
+        /**
+         * array of errors.
+         *
+         * holds a list of errors / warnings that were generated while trying
+         * generate the query string for the api
+         *
+         * @var array
+         * @access public
+         */
+        var $errors = array();
 
+        /**
+         * the query that is sent to the api to generate the chart.
+         *
+         * @var string
+         * @access public
+         */
         var $return = null;
 
+        /**
+         * the seperator between params in the url.
+         *
+         * @var string
+         * @access public
+         */
         var $paramSeperator = '&';
 
-        var $maxSize = 300000;
+        /**
+         * the max size of the graph (height x width).
+         *
+         * @var int
+         * @access private
+         */
+        var $__maxSize = 300000;
 
-        var $apiUrl = 'http://chart.apis.google.com/chart?';
+        /**
+         * the api address.
+         *
+         * @var string
+         * @access private
+         */
+        var $__apiUrl = 'http://chart.apis.google.com/chart?';
 
-        function test( $name = 'pie3d' )
+        /**
+         * turn debug on or off.
+         *
+         * @var bool
+         * @access public
+         */
+        var $debug = false;
+
+        /**
+         * turn cache on or off.
+         *
+         * @var bool
+         * @access public
+         */
+        var $cache = true;
+
+        public function test( $name = 'pie3d' )
         {
             switch( $name )
             {
@@ -245,8 +293,8 @@
                     return '<img border="0" alt="Yellow pie chart" src="http://chart.apis.google.com/chart?chs=250x100&chd=t:60,40&cht=p3&chl=Hello|World"/>';
                     break;
 
-                case 'pie':
-                    ;
+                case 'pie2d':
+                    return '<img border="0" alt="Yellow pie chart" src="http://chart.apis.google.com/chart?chs=250x100&chd=t:60,40&cht=p&chl=Hello|World"/>';
                     break;
 
                 default:
@@ -261,13 +309,15 @@
                 return false;
             }
 
+            $this->__reset();
+
             $this->__setChartType( $name );
 
             foreach( $data as $key => $value )
             {
                 if ( !isset( $this->setup[$name][$key] ) )
                 {
-                    $this->errors = __( 'Param "'.$key.'" is not supported in chart type "'.$name.'"', true );
+                    $this->__errors = __( 'Param "'.$key.'" is not supported in chart type "'.$name.'"', true );
                     continue;
                 }
 
@@ -299,6 +349,14 @@
             }
 
             return $this->__render( $data );
+        }
+
+        function __reset()
+        {
+            $this->output   = null;
+            $this->__errors = null;
+            $this->__debug  = null;
+            $this->return   = null;
         }
 
         function __setFill( $key, $data )
@@ -376,14 +434,13 @@
                     if ( empty( $params ) )
                     {
                         $params[] = '4F4F4F';
-                        $this->errors[] = __( 'No color was set, adding a default', true );
+                        $this->__errors[] = __( 'No color was set, adding a default', true );
                     }
                     $params[] = (int)$title['size'];
                 }
 
                 $title = str_replace( '<br/>', '|', $title['text'] );
                 $this->__setData( 'title_color', $params );
-
             }
 
             else
@@ -408,12 +465,28 @@
                 }
             }
 
+            $this->output = $this->__apiUrl.implode( $this->paramSeperator, $this->return );
+
             $graph = $this->Html->image(
-                $this->apiUrl.implode( $this->paramSeperator,$this->return ),
+                $this->output,
                 $data['html']
             );
 
-            $this->return = null;
+            if ( $this->debug )
+            {
+                $graph .= '<div style="border:1px dotted gray;">';
+                    $graph .= '<h4>Query String</h4>';
+                    $graph .= '<p>'.$this->output.'</p>';
+                    if ( is_array( $this->__errors ) && !empty( $this->__errors ) )
+                    {
+                        $graph .= '<h4>Errors</h4>';
+                        foreach( $this->__errors as $error )
+                        {
+                            $graph .= '<p>'.$error.'</p>';
+                        }
+                    }
+                $graph .= '</div>';
+            }
 
             return $graph;
         }
@@ -425,7 +498,19 @@
                 $data = explode( ',', $data, 3 );
             }
 
-            if ( $data[0] * $data[1] > $this->maxSize )
+            if ( $data[0] > 1000 )
+            {
+                $data[0] = 1000;
+                $this->erros[] = __( 'Width to big, reset to 1000px', true );
+            }
+
+            if ( $data[1] > 1000 )
+            {
+                $data[1] = 1000;
+                $this->erros[] = __( 'Height to big, reset to 1000px', true );
+            }
+
+            if ( $data[0] * $data[1] > $this->__maxSize )
             {
                 $this->erros[] = __( 'Sizes exceed the maximum for google charts api', true );
                 $data = array( 100, 100 );
@@ -476,7 +561,7 @@
         {
             if ( !in_array( $name, array_flip( $this->chartTypes ) ) )
             {
-                $this->errors[] = __( 'Incorect chart type', true );
+                $this->__errors[] = __( 'Incorect chart type', true );
                 return false;
             }
 
@@ -513,6 +598,68 @@
 
 
 
+        /**
+        * legacy code below
+        */
+
+
+
+        var $settings = array(
+            'api_address' => 'http://chart.apis.google.com/chart?',
+            'size' => array(
+                'width'  => 300,
+                'height' => 300,
+                'name'   => 'chs='
+            ),
+            'charts' => array(
+                'meter' => array(
+                    'name'  => 'cht=gom',
+                    'data'  => 'chd=t:',
+                    'label' => 'chl='
+                ),
+                'sparkline' => array(
+                    'name'   => 'cht=ls',
+                    'color'  => 'chco=',
+                    'data'   => 'chd=t:',
+                    'labels' => array(
+                        'axis'  => array(
+                            'name'  => 'chxt=',
+                            'where' => array( 'x', 'y' )
+                        ),
+                        'label' => array(
+                            'name' => 'chxl=',
+                            'data' => array()
+                        ),
+                    ),
+                ),
+                'pie' => array(
+                    'name'  => 'cht=p3',
+                    'data'  => 'chd=t:',
+                    'label' => 'chl='
+                ),
+                'map' => array(
+                    'type'  => array(
+                        'name' => 'chtm=',
+                        'type' => 'world'
+                    ),
+                    'colors' => array(
+                        'name' => 'chco=',
+                        'seperator' => ','
+                    ),
+                    'places' => array(
+                        'name' => 'chld=',
+                        'seperator' => ''
+                    ),
+                    'data' => array(
+                        'name' => 'chd=t:',
+                        'seperator' => ','
+                    ),
+                    'size' => array(
+                        'name' => 'chs='
+                    )
+                )
+            )
+        );
 
         function map(  $type = 'world', $size = 'large', $data = null )
         {
@@ -661,7 +808,6 @@
                 )
             );
         }
-
 
         function meter( $data = null, $label = '', $size = array() )
         {
