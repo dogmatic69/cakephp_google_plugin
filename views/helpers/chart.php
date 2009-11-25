@@ -130,40 +130,75 @@
                 'data' => true, 'labels' => true, 'size' =>  true,
             )
         );
+
         /**
-         * Map from names to codes.
+         * the query that is sent to the api to generate the chart.
          *
-         * This is used to generat the maps based on a friendly name.
-         *
-         * @var array
+         * @var string
          * @access public
          */
-        var $chartTypes = array(
-            //pie charts
-                'pie2d'      => 'cht=p',
-                'pie3d'      => 'cht=p3',
-                'concentric' => 'cht=pc',
-            //bar charts
-                'bar'        => 'cht=bhs',
+        var $return = null;
 
-            //line charts
-                'line'       => 'cht=lc',
-                'spark'      => 'cht=ls',
-                'compare'    => 'cht=lxy',
+        /**
+         * turn debug on or off.
+         *
+         * @var bool
+         * @access public
+         */
+        var $debug = false;
 
-            // radar
-                'radar'      => 'cht=r',
-                //'radar_fill' => 'cht=rs',
+        /**
+         * turn cache on or off.
+         *
+         * @var bool
+         * @access public
+         */
+        var $cache = true;
 
-            // other
-                'scatter'    => 'cht=s',
-                'venn'       => 'cht=v',
 
-            // special
-                'meter'      => 'cht=gom',
-                'map'        => 'cht=t',
-                'qr_code'    => 'cht=qr'
-        );
+
+        /**
+        * Do not modify these
+        */
+        /**
+         * the seperator between params in the url.
+         *
+         * @var string
+         * @access public
+         */
+        var $paramSeperator = '&';
+
+        /**
+         * the max size of the graph (height x width).
+         *
+         * @var int
+         * @access private
+         */
+        var $__maxSize = 300000;
+
+        /**
+         * the api address.
+         *
+         * @var string
+         * @access private
+         */
+        var $__apiUrl = 'http://chart.apis.google.com/chart?';
+
+        /**
+         * array of errors.
+         *
+         * holds a list of errors / warnings that were generated while trying
+         * generate the query string for the api
+         *
+         * @var array
+         * @access private
+         */
+        var $__errors = array();
+
+        /**
+        * internal to hold origional data for caching.
+        */
+        var $input = array();
 
         /**
          * Map names to code.
@@ -227,63 +262,39 @@
         );
 
         /**
-         * array of errors.
+         * Map from names to codes.
          *
-         * holds a list of errors / warnings that were generated while trying
-         * generate the query string for the api
+         * This is used to generat the maps based on a friendly name.
          *
          * @var array
          * @access public
          */
-        var $errors = array();
+        var $chartTypes = array(
+            //pie charts
+                'pie2d'      => 'cht=p',
+                'pie3d'      => 'cht=p3',
+                'concentric' => 'cht=pc',
+            //bar charts
+                'bar'        => 'cht=bhs',
 
-        /**
-         * the query that is sent to the api to generate the chart.
-         *
-         * @var string
-         * @access public
-         */
-        var $return = null;
+            //line charts
+                'line'       => 'cht=lc',
+                'spark'      => 'cht=ls',
+                'compare'    => 'cht=lxy',
 
-        /**
-         * the seperator between params in the url.
-         *
-         * @var string
-         * @access public
-         */
-        var $paramSeperator = '&';
+            // radar
+                'radar'      => 'cht=r',
+                //'radar_fill' => 'cht=rs',
 
-        /**
-         * the max size of the graph (height x width).
-         *
-         * @var int
-         * @access private
-         */
-        var $__maxSize = 300000;
+            // other
+                'scatter'    => 'cht=s',
+                'venn'       => 'cht=v',
 
-        /**
-         * the api address.
-         *
-         * @var string
-         * @access private
-         */
-        var $__apiUrl = 'http://chart.apis.google.com/chart?';
-
-        /**
-         * turn debug on or off.
-         *
-         * @var bool
-         * @access public
-         */
-        var $debug = false;
-
-        /**
-         * turn cache on or off.
-         *
-         * @var bool
-         * @access public
-         */
-        var $cache = true;
+            // special
+                'meter'      => 'cht=gom',
+                'map'        => 'cht=t',
+                'qr_code'    => 'cht=qr'
+        );
 
         public function test( $name = 'pie3d' )
         {
@@ -304,6 +315,9 @@
 
         function display( $name = null, $data = array() )
         {
+            // used for cache
+            $this->originalData = array( 'name' => $name, 'data' => $data );
+
             if ( !$name )
             {
                 $this->__errors[] = __( 'Please specify what graph you need', true );
@@ -316,9 +330,9 @@
                 return false;
             }
 
-            if ( $this->cache && $this->__cache )
+            if ( $this->cache && $this->__checkCache() )
             {
-                return $this->__cache( $name, $data );
+                return $this->__checkCache();
             }
 
             $this->__reset();
@@ -363,9 +377,34 @@
             return $this->__render( $data );
         }
 
-        function __cache(  )
+        function __checkCache()
         {
+            $path = APP.'plugins'.DS.'google'.DS.'vendors'.DS.'img'.DS.'chart_cache'.DS;
+            $file = sha1( $this->originalData['name'].serialize( $this->originalData['data'] ) ).'.jpg';
 
+            if ( is_file( $path.$file ) )
+            {
+                return $this->Html->image( '/google/img/chart_cache/'.$file );
+            }
+
+            $this->__errors[] = 'File <b>'.$path.$file.'</b> does not exist';
+        }
+
+        function __writeCache( $url )
+        {
+            $path = APP.'plugins'.DS.'google'.DS.'vendors'.DS.'img'.DS.'chart_cache'.DS;
+            $file = sha1( $this->originalData['name'].serialize( $this->originalData['data'] ) ).'.jpg';
+
+            $contents = file_get_contents( $url );
+
+            $fp = fopen( $path.$file, 'w' );
+            fwrite( $fp, $contents );
+            fclose( $fp );
+
+            if ( !is_file( $path.$file ) )
+            {
+                $this->__errors[] = __( 'Could not create the cache file', true );
+            }
         }
 
         function __reset()
@@ -488,6 +527,11 @@
                 $this->output,
                 $data['html']
             );
+
+            if ( $this->cache )
+            {
+                $this->__writeCache( $this->output );
+            }
 
             if ( $this->debug )
             {
