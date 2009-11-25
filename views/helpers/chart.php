@@ -115,12 +115,30 @@
                     ),
                     'orientation' => true
             ),
-
-
-
             'bar' => array(
                 //required
-                'data' => true, 'labels' => true, 'size' =>  true,
+                    'data' => array( 0 => true ), 'labels' => true, 'size' =>  true,
+                //optional
+                    'colors' => true,
+                    'fill' => array( 'type' => true, 'color' => true, 'angle' => true, 'offset' => true, ),
+                    'scale' => array( 0 => array( 'min' => true, 'max' => true ) ),
+                    'title' =>array( 'text' => true, 'color' => true, 'size' => true ),
+                    'legend' => array(
+                        'labels' => true,
+                        'position' => array( 'horizontal' => true, 'vertical' => true )
+                    ),
+                    'orientation' => true,
+                    'grid' => true,
+                    'marker' => array(
+                        0 => array(
+                            'shape' => true,
+                            'color' => true,
+                            'index' => true, // the key of the data set
+                            'size' => true,
+                            'z-index' => true
+                        )
+                    )
+
             ),
 
 
@@ -274,8 +292,11 @@
                 'pie2d'      => 'cht=p',
                 'pie3d'      => 'cht=p3',
                 'concentric' => 'cht=pc',
-            //bar charts
-                'bar'        => 'cht=bhs',
+                //bar charts
+                'horizontal_bar'         => 'cht=bhs',
+                'vertical_bar'           => 'cht=bvs',
+                'horizontal_bar_grouped' => 'cht=bhg',
+                'vertical_bar_grouped'   => 'cht=bvg',
 
             //line charts
                 'line'       => 'cht=lc',
@@ -306,6 +327,10 @@
 
                 case 'pie2d':
                     return '<img border="0" alt="Yellow pie chart" src="http://chart.apis.google.com/chart?chs=250x100&chd=t:60,40&cht=p&chl=Hello|World"/>';
+                    break;
+
+                case 'bar':
+                    return '<img border="0" alt="Yellow pie chart" src="http://chart.apis.google.com/chart?cht=bhs&chs=200x125&chd=s:ello&chco=4d89f9"/>';
                     break;
 
                 default:
