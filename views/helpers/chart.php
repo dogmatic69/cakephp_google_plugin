@@ -171,7 +171,7 @@
          * @var bool
          * @access public
          */
-        var $cache = false;
+        var $cache = true;
 
 
 
