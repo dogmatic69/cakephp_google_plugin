@@ -171,7 +171,7 @@
          * @var bool
          * @access public
          */
-        var $cache = true;
+        var $cache = false;
 
 
 
@@ -292,11 +292,13 @@
                 'pie2d'      => 'cht=p',
                 'pie3d'      => 'cht=p3',
                 'concentric' => 'cht=pc',
-                //bar charts
-                'horizontal_bar'         => 'cht=bhs',
-                'vertical_bar'           => 'cht=bvs',
-                'horizontal_bar_grouped' => 'cht=bhg',
-                'vertical_bar_grouped'   => 'cht=bvg',
+            //bar charts
+                'bar' => array(
+                    'horizontal'         => 'cht=bhs',
+                    'vertical'           => 'cht=bvs',
+                    'horizontal_grouped' => 'cht=bhg',
+                    'vertical_grouped'   => 'cht=bvg'
+                ),
 
             //line charts
                 'line'       => 'cht=lc',
@@ -366,7 +368,15 @@
 
             foreach( $data as $key => $value )
             {
-                if ( !isset( $this->setup[$name][$key] ) )
+                if ( is_array( $name ) )
+                {
+                    if ( !isset( $this->setup[$name['name']][$key] ) )
+                    {
+                        $this->__errors = __( 'Param "'.$key.'" is not supported in chart type "'.$name.'"', true );
+                        continue;
+                    }
+                }
+                else if ( !isset( $this->setup[$name][$key] ) )
                 {
                     $this->__errors = __( 'Param "'.$key.'" is not supported in chart type "'.$name.'"', true );
                     continue;
@@ -645,13 +655,48 @@
          */
         function __setChartType( $name )
         {
-            if ( !in_array( $name, array_flip( $this->chartTypes ) ) )
+            $nameArray = array();
+            if ( is_array( $name ) )
+            {
+                $nameArray = $name;
+                if ( !isset( $name['name'] ) )
+                {
+                    $this->__errors[] = __( 'Please specify the type of chart with array( \'name\' => \'some_name\' ); or just \'some_name\'.', true );
+                    return false;
+                }
+
+                if ( isset( $name['type'] ) )
+                {
+                    $name = $name['name'].'_'.$name['type'];
+                }
+                else
+                {
+                    $name = $name['name'];
+                }
+            }
+            if ( !empty( $nameArray ) )
+            {
+                if ( !in_array( str_replace( $nameArray['name'].'_', '', $name ), array_flip( $this->chartTypes[$nameArray['name']] ) ) )
+                {
+                    $this->__errors[] = __( 'Incorect chart type', true );
+                    return false;
+                }
+            }
+            else if ( !in_array( $name, array_flip( $this->chartTypes ) ) )
             {
                 $this->__errors[] = __( 'Incorect chart type', true );
                 return false;
             }
 
-            $this->return[] = $this->chartTypes[$name];
+            if ( !empty( $nameArray ) )
+            {
+                $this->return[] = $this->chartTypes[$nameArray['name']][str_replace( $nameArray['name'].'_', '', $name )];
+            }
+            else
+            {
+                 $this->return[] = $this->chartTypes[$name];
+            }
+
             return true;
         }
 
