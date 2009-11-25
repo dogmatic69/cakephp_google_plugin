@@ -304,9 +304,21 @@
 
         function display( $name = null, $data = array() )
         {
+            if ( !$name )
+            {
+                $this->__errors[] = __( 'Please specify what graph you need', true );
+                return false;
+            }
+
             if ( empty( $data ) )
             {
+                $this->__errors[] = __( 'No data was given', true );
                 return false;
+            }
+
+            if ( $this->cache && $this->__cache )
+            {
+                return $this->__cache( $name, $data );
             }
 
             $this->__reset();
@@ -349,6 +361,11 @@
             }
 
             return $this->__render( $data );
+        }
+
+        function __cache(  )
+        {
+
         }
 
         function __reset()
