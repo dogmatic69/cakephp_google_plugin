@@ -17,6 +17,7 @@
 */
 
 App::import('Core', 'HttpSocket');
+App::import('Core','Session');
 
 /**
 * GoogleContactsSource
@@ -82,18 +83,30 @@ class GoogleContactsSource extends DataSource {
     $_toPost['service'] = $config['service'];
     $_toPost['source'] = $config['source'];
 
+    // Initializing Cake Session
+    $session = new CakeSession();
+    $session->start();
+    
+    // Validating if curl is available
     if (function_exists('curl_init')) {
       $this->_method = 'curl';
     } else {
       $this->_method = 'fopen';
     }
-
-    $HttpSocket = new HttpSocket();
-    $results = $HttpSocket->post($this->_uri, $_toPost);
-    $first_split = split("\n",$results);
-    foreach($first_split as $string) {
-      $arr = split("=",$string);
-      if ($arr[0] == "Auth") $this->_auth_key = $arr[1];
+    
+    //Looking for auth key in cookie of google api client login
+    $cookie_key = $session->read('GoogleClientLogin._auth_key');
+    if($cookie_key == NULL || $cookie_key == ""){
+      $HttpSocket = new HttpSocket();
+      $results = $HttpSocket->post($this->_uri, $_toPost);
+      $first_split = split("\n",$results);
+      foreach($first_split as $string) {
+        $arr = split("=",$string);
+        if ($arr[0] == "Auth") $this->_auth_key = $arr[1];
+      }
+      $session->write('GoogleClientLogin._auth_key', $this->_auth_key);
+    } else {
+      $this->_auth_key = $cookie_key;
     }
     parent::__construct($config);
   }
@@ -200,7 +213,7 @@ class GoogleContactsSource extends DataSource {
   public function describe($model) {
     //return $this->_schema['google_contacts'];
   }
-  
+
   // public function insertQueryData($query, $data, $association, $assocData, $model, $linkModel, $stack) {}
   // public function resolveKey( $model, $key ) {}
   // public function rollback( $model ) {}
