@@ -1,0 +1,14 @@
+config
+controllers
+libs
+locale
+plugins
+tests
+tmp
+views
+webroot
+.htaccess
+app_controller.php
+index.php
+models/behaviors
+vendors/shells
