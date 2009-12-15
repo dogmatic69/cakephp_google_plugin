@@ -16,7 +16,7 @@
 * @license MIT License (http://www.opensource.org/licenses/mit-license.php)
 */
 
-App::import('Vendor', 'GoogleApiBase', array('file' =>'GoogleApiBase.php'));
+App::import('Lib', 'GoogleApiBase');
 
 /**
 * GoogleContactsSource
@@ -71,17 +71,19 @@ class GoogleContactsSource extends DataSource {
       return $this->GoogleApiBase->sendRequest("http://www.google.com/m8/feeds/contacts/default/full/".$queryData['conditions']['id'], "GET");
     } else {
       $args['max-results'] = ($queryData['limit'] != null)?$queryData['limit']:'25';
+      
       if (isset($queryData['order'][0]) && $queryData['order'][0] != NULL) $args['sortorder'] = $queryData['order'][0]; //Sorting order direction. Can be either ascending or descending.
       if (isset($queryData['conditions'])) {
         foreach($queryData['conditions'] AS $key => $value) {
           $args[$key] = $value;
         }
       }
+      
       $query = "http://www.google.com/m8/feeds/contacts/default/full" . "?" . http_build_query($args, "", "&");
       $result = $this->GoogleApiBase->sendRequest($query, "GET");
-      $count[0][0] = array('count'=>count($result['feed']['entry']));
       
       if(isset($queryData['fields']['COUNT']) && $queryData['fields']['COUNT'] == 1){
+        $count[0][0] = array('count'=>count($result['feed']['entry']));
         return $count;
       } else {
         return $this->GoogleApiBase->transformContactsObject($result['feed']['entry']);

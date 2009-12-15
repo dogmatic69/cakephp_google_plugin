@@ -60,7 +60,7 @@ class GoogleContactsController extends AppController {
   var $uses = array('GoogleContacts');
 
   function index() {
-    $res = $this->GoogleContacts->find('all', array('limit'=>'80'));
+    $res = $this->GoogleContacts->find('all', array('limit'=>'10'));
     // $res = $this->GoogleContacts->findById('1027b9d98daaf832');
     debug($res);
   }

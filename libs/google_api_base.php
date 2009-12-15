@@ -1,8 +1,8 @@
 <?php
 /**
-* Google Base Datasource
+* Google Api Base Class
 *
-* Simplifies managing contacts with the google contacts api.
+* Methods used to interact with Google Api
 *
 * Copyright (c) 2009 Juan Carlos del Valle ( imekinox )
 *
@@ -12,12 +12,12 @@
 * @copyright     Copyright (c) 2009 Juan Carlos del Valle ( imekinox )
 * @link http://www.imekinox.com
 * @package       google
-* @subpackage    google.models.datasources.google
+* @subpackage    google.vendors.GoogleApiBase
 * @license MIT License (http://www.opensource.org/licenses/mit-license.php)
 */
 
 App::import('Core', 'HttpSocket');
-App::import('Core','Session');
+App::import('Core', 'Session');
 
 /**
 * GoogleSource
