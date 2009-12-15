@@ -16,14 +16,15 @@
 * @license MIT License (http://www.opensource.org/licenses/mit-license.php)
 */
 
-App::import('Datasource','GoogleSource');
+App::import('Vendor', 'GoogleApiBase', array('file' =>'GoogleApiBase.php'));
 
 /**
 * GoogleContactsSource
 *
 * Datasource for Google Contacts
 */
-class GoogleContactsSource extends GoogleSource {
+
+class GoogleContactsSource extends DataSource {
 
   /**
   * Version for this Data Source.
@@ -39,7 +40,17 @@ class GoogleContactsSource extends GoogleSource {
   * @var string
   * @access public
   */
+  
   var $description = 'GoogleContacts Datasource';
+
+  /**
+  * Google api base class
+  *
+  * @var Object
+  * @access public
+  */
+  
+  var $GoogleApiBase;
 
   /**
   * Default Constructor
@@ -47,14 +58,17 @@ class GoogleContactsSource extends GoogleSource {
   * @param array $config options
   * @access public
   */
-
+  
   public function __construct($config) {
+    //Select contacts service for login token
+    $config['service'] = "cp";
+    $this->GoogleApiBase = new GoogleApiBase($config);
     parent::__construct($config);
   }
 
   public function read($model, $queryData = array()) {
     if (isset($queryData['conditions']['id'])) {
-      return $this->sendRequest("http://www.google.com/m8/feeds/contacts/default/full/".$queryData['conditions']['id'], "GET");
+      return $this->GoogleApiBase->sendRequest("http://www.google.com/m8/feeds/contacts/default/full/".$queryData['conditions']['id'], "GET");
     } else {
       $args['max-results'] = ($queryData['limit'] != null)?$queryData['limit']:'25';
       if (isset($queryData['order'][0]) && $queryData['order'][0] != NULL) $args['sortorder'] = $queryData['order'][0]; //Sorting order direction. Can be either ascending or descending.
@@ -64,7 +78,7 @@ class GoogleContactsSource extends GoogleSource {
         }
       }
       $query = "http://www.google.com/m8/feeds/contacts/default/full" . "?" . http_build_query($args, "", "&");
-      $result = $this->sendRequest($query, "GET");
+      $result = $this->GoogleApiBase->sendRequest($query, "GET");
       $count[0][0] = array('count'=>count($result['feed']['entry']));
       return (isset($queryData['fields']['COUNT']) && $queryData['fields']['COUNT'] == 1) ? $count : $result['feed']['entry'];
     }
@@ -81,8 +95,19 @@ class GoogleContactsSource extends GoogleSource {
   public function delete($model, $id = null) {
 
   }
-
-  // public function calculate(&$model, $func, $params = array()) { }
+  
+  public function calculate(&$model, $func, $params = array()) {
+    $params = (array)$params;
+    switch (strtolower($func)) {
+    case 'count':
+      return array('COUNT' => true);
+      break;
+    case 'max':
+      break;
+    case 'min':
+      break;
+    }
+  }
 
   public function query($query, $params, $model) {
     switch ($query) {

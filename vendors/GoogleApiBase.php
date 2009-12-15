@@ -24,7 +24,7 @@ App::import('Core','Session');
 *
 * Datasource for Google API
 */
-class GoogleSource extends DataSource {
+class GoogleApiBase {
 
   /**
   * Version for this Data Source.
@@ -95,7 +95,7 @@ class GoogleSource extends DataSource {
     }
     
     //Looking for auth key in cookie of google api client login
-    $cookie_key = $session->read('GoogleClientLogin._auth_key');
+    $cookie_key = $session->read('GoogleClientLogin'.$_toPost['service'].'._auth_key');
     if($cookie_key == NULL || $cookie_key == ""){
       //Geting auth key via HttpSocket
       $HttpSocket = new HttpSocket();
@@ -105,11 +105,10 @@ class GoogleSource extends DataSource {
         $arr = split("=",$string);
         if ($arr[0] == "Auth") $this->_auth_key = $arr[1];
       }
-      $session->write('GoogleClientLogin._auth_key', $this->_auth_key);
+      $session->write('GoogleClientLogin'.$_toPost['service'].'._auth_key', $this->_auth_key);
     } else {
       $this->_auth_key = $cookie_key;
     }
-    parent::__construct($config);
   }
 
   /**
@@ -120,7 +119,7 @@ class GoogleSource extends DataSource {
   * @return xml object
   * @access private
   */
-  protected function sendRequest($url, $method) {
+  public function sendRequest($url, $method) {
     /*
       Could'nt find a way to do it via HttpSocket i got empty result
 
@@ -150,19 +149,6 @@ class GoogleSource extends DataSource {
     }
     $result = json_decode($json,true);
     return $result;
-  }
-
-  public function calculate(&$model, $func, $params = array()) {
-    $params = (array)$params;
-    switch (strtolower($func)) {
-    case 'count':
-      return array('COUNT' => true);
-      break;
-    case 'max':
-      break;
-    case 'min':
-      break;
-    }
   }
 }
 ?>
