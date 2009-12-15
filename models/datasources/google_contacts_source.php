@@ -80,7 +80,12 @@ class GoogleContactsSource extends DataSource {
       $query = "http://www.google.com/m8/feeds/contacts/default/full" . "?" . http_build_query($args, "", "&");
       $result = $this->GoogleApiBase->sendRequest($query, "GET");
       $count[0][0] = array('count'=>count($result['feed']['entry']));
-      return (isset($queryData['fields']['COUNT']) && $queryData['fields']['COUNT'] == 1) ? $count : $result['feed']['entry'];
+      
+      if(isset($queryData['fields']['COUNT']) && $queryData['fields']['COUNT'] == 1){
+        return $count;
+      } else {
+        return $this->GoogleApiBase->transformContactsObject($result['feed']['entry']);
+      }
     }
   }
 

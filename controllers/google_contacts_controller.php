@@ -32,23 +32,27 @@
 
   Restult array keys:
   
-    gd$etag
-    id
+    etag
+    contact_id
     updated
-    app$edited
+    edited
     category
     title
-    content
-    link
-    gd$name
-    gContact$birthday
-    gd$organization
-    gd$email
-    gd$im
-    gd$phoneNumber
-    gd$structuredPostalAddress
-    gContact$website
-    gContact$groupMembershipInfo
+    content //optional
+    name //optional
+    nickname //optional
+    birthday //optional
+    organization //optional
+    email //optional
+    im //optional
+    phones //optional
+    address //optional
+    events //optional
+    relations //optional
+    custom //optional
+    websites //optional
+    groups //optional
+
 */
 
 class GoogleContactsController extends AppController {
@@ -56,7 +60,7 @@ class GoogleContactsController extends AppController {
   var $uses = array('GoogleContacts');
 
   function index() {
-    $res = $this->GoogleContacts->find('all',array('limit'=>'50'));
+    $res = $this->GoogleContacts->find('all', array('limit'=>'80'));
     // $res = $this->GoogleContacts->findById('1027b9d98daaf832');
     debug($res);
   }
