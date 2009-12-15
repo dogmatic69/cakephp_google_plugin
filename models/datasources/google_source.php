@@ -127,6 +127,7 @@ class GoogleSource extends DataSource {
       $auth['header'] = "Authorization: GoogleLogin auth=" . $this->_auth_key;
       $result = $HttpSocket->get("http://www.google.com/m8/feeds/contacts/jc.ekinox@gmail.com/full", array(), $auth);
     */
+    $url = $url . "&alt=json";
     $header[] = "Authorization: GoogleLogin auth=" . $this->_auth_key;
     $header[] = "GData-Version: 3.0";
     if ($this->_method == 'curl') {

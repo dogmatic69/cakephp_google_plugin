@@ -56,7 +56,6 @@ class GoogleContactsSource extends GoogleSource {
     if (isset($queryData['conditions']['id'])) {
       return $this->sendRequest("http://www.google.com/m8/feeds/contacts/default/full/".$queryData['conditions']['id'], "GET");
     } else {
-      $args['alt'] = 'json';
       $args['max-results'] = ($queryData['limit'] != null)?$queryData['limit']:'25';
       if (isset($queryData['order'][0]) && $queryData['order'][0] != NULL) $args['sortorder'] = $queryData['order'][0]; //Sorting order direction. Can be either ascending or descending.
       if (isset($queryData['conditions'])) {
