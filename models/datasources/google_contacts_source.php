@@ -16,7 +16,7 @@
 * @license MIT License (http://www.opensource.org/licenses/mit-license.php)
 */
 
-App::import('Lib', 'GoogleApiBase');
+App::import('Lib', 'GoogleApiContacts');
 
 /**
 * GoogleContactsSource
@@ -53,6 +53,14 @@ class GoogleContactsSource extends DataSource {
   var $GoogleApiBase;
 
   /**
+  * Google Contacts custom schema
+  *
+  * @var Array
+  * @access protected
+  */
+  
+  protected $_schema;
+  /**
   * Default Constructor
   *
   * @param array $config options
@@ -61,14 +69,14 @@ class GoogleContactsSource extends DataSource {
   
   public function __construct($config) {
     //Select contacts service for login token
-    $config['service'] = "cp";
-    $this->GoogleApiBase = new GoogleApiBase($config);
+    $this->GoogleApiContacts = new GoogleApiContacts($config);
+    $this->_schema = $this->GoogleApiContacts->getSchema();
     parent::__construct($config);
   }
 
   public function read($model, $queryData = array()) {
     if (isset($queryData['conditions']['id'])) {
-      return $this->GoogleApiBase->sendRequest("http://www.google.com/m8/feeds/contacts/default/full/".$queryData['conditions']['id'], "GET");
+      return $this->GoogleApiContacts->sendRequest("http://www.google.com/m8/feeds/contacts/default/full/".$queryData['conditions']['id'], "GET");
     } else {
       $args['max-results'] = ($queryData['limit'] != null)?$queryData['limit']:'25';
       
@@ -80,27 +88,28 @@ class GoogleContactsSource extends DataSource {
       }
       
       $query = "http://www.google.com/m8/feeds/contacts/default/full" . "?" . http_build_query($args, "", "&");
-      $result = $this->GoogleApiBase->sendRequest($query, "GET");
+      $result = $this->GoogleApiContacts->sendRequest($query, "GET");
       
       if(isset($queryData['fields']['COUNT']) && $queryData['fields']['COUNT'] == 1){
         $count[0][0] = array('count'=>count($result['feed']['entry']));
         return $count;
       } else {
-        return $this->GoogleApiBase->transformContactsObject($result['feed']['entry']);
+        return $this->GoogleApiContacts->transformObject($result['feed']['entry']);
       }
     }
   }
 
   public function create($model, $fields = array(), $values = array()) {
-
+    debug("create");
   }
 
   public function update($model, $fields = array(), $values = array()) {
-
+    debug($fields);
+    debug($values);
   }
 
   public function delete($model, $id = null) {
-
+    debug("delete");
   }
   
   public function calculate(&$model, $func, $params = array()) {
@@ -117,6 +126,7 @@ class GoogleContactsSource extends DataSource {
   }
 
   public function query($query, $params, $model) {
+    debug($query);
     switch ($query) {
     case "findById": // NOT WORKING YET
       $q = "http://www.google.com/m8/feeds/groups/default/full/".$params[0];
@@ -129,27 +139,27 @@ class GoogleContactsSource extends DataSource {
   }
 
   public function listSources() {
-    //return array('google_contacts');
+    return array('google_contacts');
   }
 
   public function describe($model) {
-    //return $this->_schema['google_contacts'];
+    return $this->_schema['google_contacts'];
   }
 
-  // public function insertQueryData($query, $data, $association, $assocData, $model, $linkModel, $stack) {}
-  // public function resolveKey( $model, $key ) {}
-  // public function rollback( $model ) {}
+  // public function insertQueryData($query, $data, $association, $assocData, $model, $linkModel, $stack) { debug("iq"); }
+  // public function resolveKey( $model, $key ) { debug("key"); }
+  // public function rollback( $model ) { debug("rollback"); }
   // public function sources( $reset = false ) {}
   // public function column( $real ) {}
-  // public function commit( $model ) {}
-  // public function begin( $model ) {}
+  // public function commit( $model ) { debug("commit"); }
+  // public function begin( $model ) { debug("begin"); }
   // public function __cacheDescription( $object, $data = NULL ){}
   // public function __destruct(){}
-  // public function isInterfaceSupported( $interface ){}
+  // public function isInterfaceSupported( $interface ){ debug("interface"); }
   // public function lastAffected( $source = NULL ){}
   // public function lastInsertId( $source = NULL ){}
   // public function lastNumRows( $source = NULL ){}
-  // public function cakeError( $method, $messages = array ( ) ){}
-  // public function dispatchMethod( $method, $params = array ( ) ){ }
+  // public function cakeError( $method, $messages = array ( ) ){ debug("Error"); }
+  // public function dispatchMethod( $method, $params = array ( ) ){ debug("method" . $method); }
 }
 ?>

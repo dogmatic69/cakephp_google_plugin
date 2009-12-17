@@ -20,7 +20,7 @@ App::import('Core', 'HttpSocket');
 App::import('Core', 'Session');
 
 /**
-* GoogleSource
+* GoogleApiBase
 *
 * Datasource for Google API
 */
@@ -151,100 +151,5 @@ class GoogleApiBase {
     return $result;
   }
 
-
-  /**
-  * Transform Google Contacts object into a smaller/cleaner object
-  *
-  * @param object $object Google Contacts result object
-  * @return object
-  * @access public
-  */
-
-  public function transformContactsObject($object) {
-    foreach($object as $i => $value) {
-      $new_object[$i]['etag'] = $object[$i]['gd$etag'];
-      $tmp = split("/",$object[$i]['id']['$t']);
-      $new_object[$i]['contact_id'] = $tmp[8];
-      $new_object[$i]['updated'] = $object[$i]['updated']['$t'];
-      $new_object[$i]['edited'] = $object[$i]['app$edited']['$t'];
-      $tmp = split("#",$object[$i]['category'][0]['term']);
-      $new_object[$i]['category'] = $tmp[1];
-      $new_object[$i]['title'] = $object[$i]['title']['$t'];
-      if (isset($object[$i]['content'])) {
-        $new_object[$i]['content'] = $object[$i]['content']['$t'];
-      }
-      if (isset($object[$i]['gd$name'])) {
-        $new_object[$i]['name'] = $object[$i]['gd$name']['gd$fullName']['$t'];
-      }
-      if (isset($object[$i]['gContact$nickname'])) {
-        $new_object[$i]['nickname'] = $object[$i]['gContact$nickname']['$t'];
-      }
-      if (isset($object[$i]['gContact$birthday'])) {
-        $new_object[$i]['birthday'] = $object[$i]['gContact$birthday']['when'];
-      }
-      if (isset($object[$i]['gd$organization'])) {
-        $new_object[$i]['organization']['title'] = $object[$i]['gd$organization'][0]['gd$orgTitle']['$t'];
-        $new_object[$i]['organization']['company'] = $object[$i]['gd$organization'][0]['gd$orgName']['$t'];
-      }
-      if (isset($object[$i]['gd$email'])) {
-        foreach($object[$i]['gd$email'] AS $key => $value) {
-          $var_name = split("#",$object[$i]['gd$email'][$key]['rel']);
-          $new_object[$i]['email'][$key]['primary'] = isset($object[$i]['gd$email'][$key]['primary']);
-          $new_object[$i]['email'][$key]['address'] = $object[$i]['gd$email'][$key]['address'];
-          $new_object[$i]['email'][$key]['category'] = $var_name[1];
-        }
-      }
-      if (isset($object[$i]['gd$im'])) {
-        foreach($object[$i]['gd$im'] AS $key => $value) {
-          $var_name = split("#",$object[$i]['gd$im'][$key]['protocol']);
-          $new_object[$i]['im'][$key]['address'] = $object[$i]['gd$im'][$key]['address'];
-          $new_object[$i]['im'][$key]['category'] = $var_name[1];
-        }
-      }
-      if (isset($object[$i]['gd$phoneNumber'])) {
-        foreach($object[$i]['gd$phoneNumber'] AS $key => $value) {
-          $var_name = split("#",$object[$i]['gd$phoneNumber'][$key]['rel']);
-          $new_object[$i]['phones'][$key]['phone'] = $object[$i]['gd$phoneNumber'][$key]['$t'];
-          $new_object[$i]['phones'][$key]['category'] = $var_name[1];
-        }
-      }
-      if (isset($object[$i]['gd$structuredPostalAddress'])) {
-        foreach($object[$i]['gd$structuredPostalAddress'] AS $key => $value) {
-          $var_name = split("#",$object[$i]['gd$structuredPostalAddress'][$key]['rel']);
-          $new_object[$i]['address'][$key]['address'] = $object[$i]['gd$structuredPostalAddress'][$key]['gd$formattedAddress']['$t'];
-          $new_object[$i]['address'][$key]['category'] = $var_name[1];
-        }
-      }
-      if (isset($object[$i]['gContact$event'])) {
-        foreach($object[$i]['gContact$event'] AS $key => $value) {
-          $new_object[$i]['events'][$key]['date'] = $object[$i]['gContact$event'][$key]['gd$when']['startTime'];
-          $new_object[$i]['events'][$key]['category'] = $object[$i]['gContact$event'][$key]['rel'];
-        }
-      }
-      if (isset($object[$i]['gContact$relation'])) {
-        foreach($object[$i]['gContact$relation'] AS $key => $value) {
-          $new_object[$i]['relations'][$key]['name'] = $object[$i]['gContact$relation'][$key]['$t'];
-          $new_object[$i]['relations'][$key]['category'] = $object[$i]['gContact$relation'][$key]['rel'];
-        }
-      }
-      if (isset($object[$i]['gContact$userDefinedField'])) {
-        $new_object[$i]['custom'] = $object[$i]['gContact$userDefinedField'];
-      }
-      if (isset($object[$i]['gContact$website'])) {
-        foreach($object[$i]['gContact$website'] AS $key => $value) {
-          $new_object[$i]['websites'][$key]['address'] = $object[$i]['gContact$website'][$key]['href'];
-          $new_object[$i]['websites'][$key]['category'] = $object[$i]['gContact$website'][$key]['rel'];
-        }
-      }
-      if (isset($object[$i]['gContact$groupMembershipInfo'])) {
-        foreach($object[$i]['gContact$groupMembershipInfo'] AS $key => $value) {
-          $var_name = split("/",$object[$i]['gContact$groupMembershipInfo'][$key]['href']);
-          $new_object[$i]['groups'][$key]['group_id'] = $var_name[8];
-          $new_object[$i]['groups'][$key]['deleted'] = $object[$i]['gContact$groupMembershipInfo'][$key]['deleted'];
-        }
-      }
-    }
-    return $new_object;
-  }
 }
 ?>

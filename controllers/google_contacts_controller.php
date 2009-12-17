@@ -9,7 +9,6 @@
       'accountType' => 'GOOGLE',
       'Email' => 'YOUR GOOGLE EMAIL',
       'Passwd' => 'YOUR PASSWORD',
-      'service' => 'cp',
       'source' => 'companyName-applicationName-versionID',
       'database' => ''
     );
@@ -60,9 +59,11 @@ class GoogleContactsController extends AppController {
   var $uses = array('GoogleContacts');
 
   function index() {
-    $res = $this->GoogleContacts->find('all', array('limit'=>'10'));
-    // $res = $this->GoogleContacts->findById('1027b9d98daaf832');
-    debug($res);
+    $res = $this->GoogleContacts->find('all', array('limit'=>'2'));
+    $contact = $res[0];
+    //unset($contact['contact_id']);
+    $this->GoogleContacts->create($contact);
+    $this->GoogleContacts->save();
   }
 
 }
