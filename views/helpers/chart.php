@@ -120,21 +120,21 @@
                     'data' => array( 0 => true ), 'labels' => true, 'size' =>  true,
                 //optional
                     'colors' => true,
-                    'fill' => array( 'type' => true, 'color' => true, 'angle' => true, 'offset' => true, ),
-                    'scale' => array( 0 => array( 'min' => true, 'max' => true ) ),
-                    'title' =>array( 'text' => true, 'color' => true, 'size' => true ),
+                    'fill'   => array( 'type' => true, 'color' => true, 'angle' => true, 'offset' => true, ),
+                    'scale'  => array( 0 => array( 'min' => true, 'max' => true ) ),
+                    'title'  => array( 'text' => true, 'color' => true, 'size' => true ),
                     'legend' => array(
-                        'labels' => true,
+                        'labels'   => true,
                         'position' => array( 'horizontal' => true, 'vertical' => true )
                     ),
                     'orientation' => true,
                     'grid' => true,
                     'marker' => array(
                         0 => array(
-                            'shape' => true,
-                            'color' => true,
-                            'index' => true, // the key of the data set
-                            'size' => true,
+                            'shape'   => true,
+                            'color'   => true,
+                            'index'   => true, // the key of the data set
+                            'size'    => true,
                             'z-index' => true
                         )
                     )
@@ -732,9 +732,6 @@
         /**
         * legacy code below
         */
-
-
-
         var $settings = array(
             'api_address' => 'http://chart.apis.google.com/chart?',
             'size' => array(
