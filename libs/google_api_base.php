@@ -74,13 +74,9 @@ class GoogleApiBase {
   * @access public
   */
   public function __construct($config) {
-    /**
-    * @todo is is posible to get this all lowercase so its not a pain
-    * to remember what is what when using it?
-    */
-    $_toPost['accountType'] = $config['accountType'];
-    $_toPost['Email'] = $config['Email'];
-    $_toPost['Passwd'] = $config['Passwd'];
+    $_toPost['accounttype'] = $config['accounttype'];
+    $_toPost['email'] = $config['email'];
+    $_toPost['passwd'] = $config['passwd'];
     $_toPost['service'] = $config['service'];
     $_toPost['source'] = $config['source'];
 

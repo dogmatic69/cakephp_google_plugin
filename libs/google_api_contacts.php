@@ -27,9 +27,7 @@ class GoogleApiContacts extends GoogleApiBase
 {
   public function __construct( $config )
   {
-    /**
-    * @todo why is this just cp. could it not be more descriptive?
-    */
+    // CP is the key for google contacts api, this is passed to the auth to tell we are using contacts
     $config['service'] = 'cp';
     parent::__construct( $config );
   }

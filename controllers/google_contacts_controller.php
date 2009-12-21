@@ -23,9 +23,9 @@
 *
 * var $google_contacts = array(
 *     'datasource'  => 'google_contacts',
-*     'accountType' => 'GOOGLE',
-*     'Email'       => 'YOUR GOOGLE EMAIL',
-*     'Passwd'      => 'YOUR PASSWORD',
+*     'accounttype' => 'GOOGLE',
+*     'email'       => 'YOUR GOOGLE EMAIL',
+*     'passwd'      => 'YOUR PASSWORD',
 *     'source'      => 'companyName-applicationName-versionID',
 *     'database'    => ''
 * );
@@ -68,7 +68,6 @@
 * - websites
 * - groups
 *
-* @todo could be called ContactsController?
 */
 
 class GoogleContactsController extends AppController
