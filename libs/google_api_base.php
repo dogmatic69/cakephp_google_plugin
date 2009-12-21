@@ -136,7 +136,7 @@ class GoogleApiBase {
     case "UPDATE":
       $header[] = "Content-type: application/atom+xml";
       $header[] = "X-HTTP-Method-Override: PUT";
-      //$header[] = "If-Match: *";
+      $header[] = "If-Match: *";
       $method = "POST";
       break;
     case "DELETE":
@@ -166,9 +166,6 @@ class GoogleApiBase {
       } else {
         $atom = file_get_contents($url, false, $context);
       }
-    }
-    if ($action == "UPDATE") {
-      debug($atom);
     }
     $xml_result =& new XML($atom);
     return Set::reverse($xml_result);

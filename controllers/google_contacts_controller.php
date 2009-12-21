@@ -44,29 +44,9 @@
 * - showdeleted -> Include deleted contacts in the returned contacts feed.
 * - group       -> Value of this parameter specifies group ID
 *
-* Restult array keys ( required ):
-* - etag
-* - contact_id
-* - updated
-* - edited
-* - category
-* - title
-*
-* Restult array keys ( optional ):
-* - content
-* - name
-* - nickname
-* - birthday
-* - organization
-* - email
-* - im
-* - phones
-* - address
-* - events
-* - relations
-* - custom
-* - websites
-* - groups
+* Restult array keys:
+* 
+* Use debug($this->GoogleContacts->_schema); to get structured array
 *
 */
 
@@ -77,14 +57,10 @@ class GoogleContactsController extends AppController
 
   function index()
   {
-    $res = $this->GoogleContacts->find(
-             'all',
-             array(
-               'limit' => '2'
-             )
-           );
-    $contact = $res[0];
-    $this->GoogleContacts->create($contact);
-    $this->GoogleContacts->save();
+    $res = $this->GoogleContacts->find('first');
+    debug($res);
+    // $res['Name']['fullName'] = "Carlos Ruben CAMBIADO DESDE CAKE";
+    // $this->GoogleContacts->create($res);
+    // $this->GoogleContacts->save();
   }
 }
