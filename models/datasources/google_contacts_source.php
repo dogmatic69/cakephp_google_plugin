@@ -40,7 +40,7 @@ class GoogleContactsSource extends DataSource {
   * @var string
   * @access public
   */
-  
+
   var $description = 'GoogleContacts Datasource';
 
   /**
@@ -49,7 +49,7 @@ class GoogleContactsSource extends DataSource {
   * @var Object
   * @access public
   */
-  
+
   var $GoogleApiBase;
 
   /**
@@ -58,7 +58,7 @@ class GoogleContactsSource extends DataSource {
   * @var Array
   * @access protected
   */
-  
+
   protected $_schema;
   /**
   * Default Constructor
@@ -66,7 +66,7 @@ class GoogleContactsSource extends DataSource {
   * @param array $config options
   * @access public
   */
-  
+
   public function __construct($config) {
     //Select contacts service for login token
     $this->GoogleApiContacts = new GoogleApiContacts($config);
@@ -76,25 +76,25 @@ class GoogleContactsSource extends DataSource {
 
   public function read($model, $queryData = array()) {
     if (isset($queryData['conditions']['id'])) {
-      return $this->GoogleApiContacts->sendRequest("http://www.google.com/m8/feeds/contacts/default/full/".$queryData['conditions']['id'], "GET");
+      return $this->GoogleApiContacts->sendRequest("http://www.google.com/m8/feeds/contacts/default/full/".$queryData['conditions']['id'], "READ");
     } else {
       $args['max-results'] = ($queryData['limit'] != null)?$queryData['limit']:'25';
-      
+
       if (isset($queryData['order'][0]) && $queryData['order'][0] != NULL) $args['sortorder'] = $queryData['order'][0]; //Sorting order direction. Can be either ascending or descending.
       if (isset($queryData['conditions'])) {
         foreach($queryData['conditions'] AS $key => $value) {
           $args[$key] = $value;
         }
       }
-      
+
       $query = "http://www.google.com/m8/feeds/contacts/default/full" . "?" . http_build_query($args, "", "&");
-      $result = $this->GoogleApiContacts->sendRequest($query, "GET");
-      
-      if(isset($queryData['fields']['COUNT']) && $queryData['fields']['COUNT'] == 1){
-        $count[0][0] = array('count'=>count($result['feed']['entry']));
+      $result = $this->GoogleApiContacts->sendRequest($query, "READ");
+
+      if (isset($queryData['fields']['COUNT']) && $queryData['fields']['COUNT'] == 1) {
+        $count[0][0] = array('count'=>count($result['Feed']['Entry']));
         return $count;
       } else {
-        return $this->GoogleApiContacts->transformObject($result['feed']['entry']);
+        return $result['Feed']['Entry'];
       }
     }
   }
@@ -104,14 +104,69 @@ class GoogleContactsSource extends DataSource {
   }
 
   public function update($model, $fields = array(), $values = array()) {
-    debug($fields);
-    debug($values);
+    $baseObject = $model->data['GoogleContacts'];
+    $xml .= "<atom:entry xmlns:atom='http://www.w3.org/2005/Atom' xmlns:gd='http://schemas.google.com/g/2005' gd:etag='".urlencode($baseObject['gd:etag'])."'>";
+    $xml .= "<id>".$baseObject['id']."</id>";
+    $xml .= "<updated>".$baseObject['updated']."</updated>";
+    $xml .= "<app:edited xmlns:app='http://www.w3.org/2007/app'>".$baseObject['edited']."</app:edited>";
+    $xml .= "<category scheme='".$baseObject['Category']['scheme']."' term='".$baseObject['Category']['term']."'/>";
+    $xml .= "<title>".$baseObject['title']."</title>";
+    $xml .= "<content>".$baseObject['content']."</content>";
+    foreach ($baseObject['Link'] as $Link) {
+      $xml .= "<link rel='".$Link['rel']."' type='".$Link['type']."' href='".$Link['href']."'/>";
+    }
+    $xml .= "<gd:name>";
+    $xml .= "<gd:fullName>".$baseObject['Name']['fullName']."</gd:fullName>";
+    $xml .= "</gd:name>";
+    $xml .= "<gContact:nickname>".$baseObject['nickname']."</gContact:nickname>";
+    $xml .= "<gContact:birthday when='".$baseObject['Birthday']['when']."'/>";
+    $xml .= "<gd:organization rel='".$baseObject['Organization']['rel']."'>";
+    $xml .= "<gd:orgName>".$baseObject['Organization']['orgName']."</gd:orgName>";
+    $xml .= "<gd:orgTitle>".$baseObject['Organization']['orgTitle']."</gd:orgTitle>";
+    $xml .= "</gd:organization>";
+    foreach ($baseObject['Email'] as $Email) {
+      $xml .= "<gd:email rel='".$Email['rel']."' address='".$Email['address']."' primary='".isset($Email['primary'])."'/>";
+    }
+    foreach ($baseObject['Im'] as $Im) {
+      $xml .= "<gd:im address='".$Im['address']."' protocol='".$Im['protocol']."' rel='".$Im['rel']."'/>";
+    }
+    foreach ($baseObject['PhoneNumber'] as $PhoneNumber) {
+      $xml .= "<gd:phoneNumber rel='".$PhoneNumber['rel']."'>".$PhoneNumber['value']."</gd:phoneNumber>";
+    }
+    foreach ($baseObject['StructuredPostalAddress'] as $StructuredPostalAddress) {
+      $xml .= "<gd:structuredPostalAddress rel='".$StructuredPostalAddress['rel']."'>";
+      $xml .= "<gd:formattedAddress>".$StructuredPostalAddress['formattedAddress']."</gd:formattedAddress>";
+      $xml .= "</gd:structuredPostalAddress>";
+    }
+    foreach ($baseObject['Event'] as $Event) {
+      $xml .= "<gContact:event rel='".$Event['rel']."'>";
+      $xml .= "<gd:when startTime='".$Event['When']['startTime']."'/>";
+      $xml .= "</gContact:event>";
+    }
+    foreach ($baseObject['Relation'] as $Relation) {
+      $xml .= "<gContact:relation rel='".$Relation['rel']."'>".$Relation['value']."</gContact:relation>";
+    }
+    foreach ($baseObject['UserDefinedField'] as $UserDefinedField) {
+      $xml .= "<gContact:userDefinedField key='".$UserDefinedField['key']."' value='".$UserDefinedField['value']."'/>";
+    }
+    foreach ($baseObject['Website'] as $Website) {
+      $xml .= "<gContact:website href='".$Website['href']."' rel='".$Website['rel']."'/>";
+    }
+    foreach ($baseObject['GroupMembershipInfo'] as $GroupMembershipInfo) {
+      $xml .= "<gContact:groupMembershipInfo deleted='".$GroupMembershipInfo['deleted']."' href='".$GroupMembershipInfo['href']."'/>";
+    }
+    $xml .= "</entry>";
+    //
+    file_put_contents(WWW_ROOT . "asd.xml", $xml);
+    $query = $baseObject['Link'][1]['href'];
+    $result = $this->GoogleApiContacts->sendRequest($query, "UPDATE", $xml);
+    //debug($result);
   }
 
   public function delete($model, $id = null) {
     debug("delete");
   }
-  
+
   public function calculate(&$model, $func, $params = array()) {
     $params = (array)$params;
     switch (strtolower($func)) {
@@ -131,9 +186,9 @@ class GoogleContactsSource extends DataSource {
     case "findById": // NOT WORKING YET
       $q = "http://www.google.com/m8/feeds/groups/default/full/".$params[0];
       debug($q);
-      $result = $this->sendRequest($q, "GET");
+      $result = $this->sendRequest($q, "READ");
       debug($result);
-      return $result['feed']['entry'];
+      return $result['Feed']['Entry'];
       break;
     }
   }

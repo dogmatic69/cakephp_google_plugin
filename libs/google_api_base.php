@@ -18,6 +18,7 @@
 
 App::import('Core', 'HttpSocket');
 App::import('Core', 'Session');
+App::import('Xml');
 
 /**
 * GoogleApiBase
@@ -83,6 +84,8 @@ class GoogleApiBase {
     $_toPost['service'] = $config['service'];
     $_toPost['source'] = $config['source'];
 
+    $this->HttpSocket = new HttpSocket();
+    
     // Initializing Cake Session
     $session = new CakeSession();
     $session->start();
@@ -98,8 +101,7 @@ class GoogleApiBase {
     $cookie_key = $session->read('GoogleClientLogin'.$_toPost['service'].'._auth_key');
     if ($cookie_key == NULL || $cookie_key == "") {
       //Geting auth key via HttpSocket
-      $HttpSocket = new HttpSocket();
-      $results = $HttpSocket->post($this->_login_uri, $_toPost);
+      $results = $this->HttpSocket->post($this->_login_uri, $_toPost);
       $first_split = split("\n",$results);
       foreach($first_split as $string) {
         $arr = split("=",$string);
@@ -119,36 +121,57 @@ class GoogleApiBase {
   * @return xml object
   * @access public
   */
-  public function sendRequest($url, $method) {
+  public function sendRequest($url, $action, $content = NULL) {
     /*
       Could'nt find a way to do it via HttpSocket i got empty result
 
       $auth['header'] = "Authorization: GoogleLogin auth=" . $this->_auth_key;
       $result = $HttpSocket->get("http://www.google.com/m8/feeds/contacts/jc.ekinox@gmail.com/full", array(), $auth);
     */
-    $url = $url . "&alt=json";
+    if($action != "UPDATE") $url = $url . "&alt=atom";
     $header[] = "Authorization: GoogleLogin auth=" . $this->_auth_key;
     $header[] = "GData-Version: 3.0";
+    switch($action){
+      case "CREATE":
+      break;
+      case "READ":
+        $method = "GET";
+      break;
+      case "UPDATE":
+        $header[] = "Content-type: application/atom+xml";
+        $header[] = "X-HTTP-Method-Override: PUT";
+        //$header[] = "If-Match: *";
+        $method = "POST";
+      break;
+      case "DELETE":
+      break;
+    }
     if ($this->_method == 'curl') {
       $ch = curl_init();
       curl_setopt($ch, CURLOPT_URL, $url);
       curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
       curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
       curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
-      $json = curl_exec($ch);
+      if($action == "UPDATE") curl_setopt($ch, CURLOPT_POSTFIELDS,$content);
+      $atom = curl_exec($ch);
       curl_close($ch);
     } else {
       $opts = array(
                 'http'=>array(
                          'method'=>$method,
-                         'header'=>$header[0]
+                         'header'=>implode("\r\n",$header)
                        )
               );
       $context = stream_context_create($opts);
-      $json = file_get_contents($url, false, $context);
+      if($action == "UPDATE"){
+        $atom = file_put_contents($url, $content, NULL, $context);
+      }else{
+        $atom = file_get_contents($url, false, $context);
+      }
     }
-    $result = json_decode($json,true);
-    return $result;
+    if($action == "UPDATE") debug($atom);
+    $xml_result =& new XML($atom);
+    return Set::reverse($xml_result);
   }
 
 }

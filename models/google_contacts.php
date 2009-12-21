@@ -19,5 +19,5 @@
 class GoogleContacts extends AppModel {
   var $name = 'GoogleContacts';
 	var $useDbConfig = 'google_contacts';
-  var $primaryKey = 'contact_id';
+  var $primaryKey = 'id';
 }

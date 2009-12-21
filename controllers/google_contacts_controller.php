@@ -61,7 +61,6 @@ class GoogleContactsController extends AppController {
   function index() {
     $res = $this->GoogleContacts->find('all', array('limit'=>'2'));
     $contact = $res[0];
-    //unset($contact['contact_id']);
     $this->GoogleContacts->create($contact);
     $this->GoogleContacts->save();
   }
