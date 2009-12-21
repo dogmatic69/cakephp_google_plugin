@@ -23,7 +23,6 @@ App::import('Lib', 'GoogleApiContacts');
 *
 * Datasource for Google Contacts
 */
-
 class GoogleContactsSource extends DataSource {
 
   /**
@@ -32,8 +31,8 @@ class GoogleContactsSource extends DataSource {
   * @var string
   * @access public
   */
-  var $version = '0.1';
 
+  var $version = '0.1';
   /**
   * Description string for this Data Source.
   *
@@ -49,7 +48,6 @@ class GoogleContactsSource extends DataSource {
   * @var Object
   * @access public
   */
-
   var $GoogleApiBase;
 
   /**
@@ -58,15 +56,22 @@ class GoogleContactsSource extends DataSource {
   * @var Array
   * @access protected
   */
-
   protected $_schema;
+
+  /**
+  * Url to request contacts
+  *
+  * @var String
+  * @access private
+  */
+  private $read_uri = "http://www.google.com/m8/feeds/contacts/default/full";
+
   /**
   * Default Constructor
   *
   * @param array $config options
   * @access public
   */
-
   public function __construct($config) {
     //Select contacts service for login token
     $this->GoogleApiContacts = new GoogleApiContacts($config);
@@ -74,20 +79,32 @@ class GoogleContactsSource extends DataSource {
     parent::__construct($config);
   }
 
+  /**
+  * Read method for find calls
+  *
+  * @param object $model
+  * @param array $queryData
+  * @access public
+  */
   public function read($model, $queryData = array()) {
     if (isset($queryData['conditions']['id'])) {
-      return $this->GoogleApiContacts->sendRequest("http://www.google.com/m8/feeds/contacts/default/full/".$queryData['conditions']['id'], "READ");
+      return $this->GoogleApiContacts->sendRequest($this->read_uri . "/" . $queryData['conditions']['id'], "READ");
     } else {
       $args['max-results'] = ($queryData['limit'] != null)?$queryData['limit']:'25';
 
-      if (isset($queryData['order'][0]) && $queryData['order'][0] != NULL) $args['sortorder'] = $queryData['order'][0]; //Sorting order direction. Can be either ascending or descending.
+      //Sorting order direction. Can be either ascending or descending.
+      if (isset($queryData['order'][0]) && $queryData['order'][0] != NULL) {
+        //If no order is specified (ascending || descending) google will set default ordering criteria
+        $args['sortorder'] = $queryData['order'][0];
+      }
+
       if (isset($queryData['conditions'])) {
         foreach($queryData['conditions'] AS $key => $value) {
           $args[$key] = $value;
         }
       }
 
-      $query = "http://www.google.com/m8/feeds/contacts/default/full" . "?" . http_build_query($args, "", "&");
+      $query = $this->read_uri . "?" . http_build_query($args, "", "&");
       $result = $this->GoogleApiContacts->sendRequest($query, "READ");
 
       if (isset($queryData['fields']['COUNT']) && $queryData['fields']['COUNT'] == 1) {
@@ -99,13 +116,29 @@ class GoogleContactsSource extends DataSource {
     }
   }
 
+  /**
+  * Create method for model
+  *
+  * @param object $model
+  * @param array $fields
+  * @param array $values
+  * @access public
+  */
   public function create($model, $fields = array(), $values = array()) {
     debug("create");
   }
 
+  /**
+  * Update method for model
+  *
+  * @param object $model
+  * @param array $fields
+  * @param array $values
+  * @access public
+  */
   public function update($model, $fields = array(), $values = array()) {
     $baseObject = $model->data['GoogleContacts'];
-    $xml .= "<atom:entry xmlns:atom='http://www.w3.org/2005/Atom' xmlns:gd='http://schemas.google.com/g/2005' gd:etag='".urlencode($baseObject['gd:etag'])."'>";
+    $xml = "<atom:entry xmlns:atom='http://www.w3.org/2005/Atom' xmlns:gd='http://schemas.google.com/g/2005' gd:etag='".urlencode($baseObject['gd:etag'])."'>";
     $xml .= "<id>".$baseObject['id']."</id>";
     $xml .= "<updated>".$baseObject['updated']."</updated>";
     $xml .= "<app:edited xmlns:app='http://www.w3.org/2007/app'>".$baseObject['edited']."</app:edited>";
@@ -157,16 +190,31 @@ class GoogleContactsSource extends DataSource {
     }
     $xml .= "</entry>";
     //
-    file_put_contents(WWW_ROOT . "asd.xml", $xml);
+    //file_put_contents(WWW_ROOT . "asd.xml", $xml);
     $query = $baseObject['Link'][1]['href'];
     $result = $this->GoogleApiContacts->sendRequest($query, "UPDATE", $xml);
     //debug($result);
   }
 
+  /**
+  * Delete method for model
+  *
+  * @param object $model
+  * @param string $id
+  * @access public
+  */
   public function delete($model, $id = null) {
     debug("delete");
   }
 
+  /**
+  * Calculate some specific prameters to find like count before calling read
+  *
+  * @param object $model
+  * @param string $func
+  * @param array $params
+  * @access public
+  */
   public function calculate(&$model, $func, $params = array()) {
     $params = (array)$params;
     switch (strtolower($func)) {
@@ -180,11 +228,22 @@ class GoogleContactsSource extends DataSource {
     }
   }
 
+  /**
+  * Handle specific query's
+  *
+  * @param array $query
+  * @param array $params
+  * @param object $model
+  * @access public
+  */
   public function query($query, $params, $model) {
     debug($query);
     switch ($query) {
-    case "findById": // NOT WORKING YET
-      $q = "http://www.google.com/m8/feeds/groups/default/full/".$params[0];
+      /**
+      * @todo not working.
+      */
+    case "findById":
+      $q = $this->read_uri . "/" . $params[0];
       debug($q);
       $result = $this->sendRequest($q, "READ");
       debug($result);
@@ -201,20 +260,22 @@ class GoogleContactsSource extends DataSource {
     return $this->_schema['google_contacts'];
   }
 
-  // public function insertQueryData($query, $data, $association, $assocData, $model, $linkModel, $stack) { debug("iq"); }
-  // public function resolveKey( $model, $key ) { debug("key"); }
-  // public function rollback( $model ) { debug("rollback"); }
-  // public function sources( $reset = false ) {}
-  // public function column( $real ) {}
-  // public function commit( $model ) { debug("commit"); }
-  // public function begin( $model ) { debug("begin"); }
-  // public function __cacheDescription( $object, $data = NULL ){}
-  // public function __destruct(){}
-  // public function isInterfaceSupported( $interface ){ debug("interface"); }
-  // public function lastAffected( $source = NULL ){}
-  // public function lastInsertId( $source = NULL ){}
-  // public function lastNumRows( $source = NULL ){}
-  // public function cakeError( $method, $messages = array ( ) ){ debug("Error"); }
-  // public function dispatchMethod( $method, $params = array ( ) ){ debug("method" . $method); }
+  /**
+  * @todo public function insertQueryData($query, $data, $association, $assocData, $model, $linkModel, $stack) { debug("iq"); }
+  * @todo public function resolveKey( $model, $key ) { debug("key"); }
+  * @todo public function rollback( $model ) { debug("rollback"); }
+  * @todo public function sources( $reset = false ) {}
+  * @todo public function column( $real ) {}
+  * @todo public function commit( $model ) { debug("commit"); }
+  * @todo public function begin( $model ) { debug("begin"); }
+  * @todo public function __cacheDescription( $object, $data = NULL ){}
+  * @todo public function __destruct(){}
+  * @todo public function isInterfaceSupported( $interface ){ debug("interface"); }
+  * @todo public function lastAffected( $source = NULL ){}
+  * @todo public function lastInsertId( $source = NULL ){}
+  * @todo public function lastNumRows( $source = NULL ){}
+  * @todo public function cakeError( $method, $messages = array ( ) ){ debug("Error"); }
+  * @todo public function dispatchMethod( $method, $params = array ( ) ){ debug("method" . $method); }
+  */
+
 }
-?>

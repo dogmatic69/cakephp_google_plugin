@@ -49,7 +49,6 @@ class GoogleApiBase {
   * @var string
   * @access private
   */
-
   private $_login_uri = "https://www.google.com/accounts/ClientLogin"; //you'll have to uncomment extension=php_openssl.dll from php.ini
 
   /**
@@ -58,7 +57,6 @@ class GoogleApiBase {
   * @var string
   * @access private
   */
-
   protected $_auth_key;
 
   /**
@@ -67,7 +65,6 @@ class GoogleApiBase {
   * @var string
   * @access private
   */
-
   protected $_method;
 
   /**
@@ -76,8 +73,11 @@ class GoogleApiBase {
   * @param array $config options
   * @access public
   */
-
   public function __construct($config) {
+    /**
+    * @todo is is posible to get this all lowercase so its not a pain
+    * to remember what is what when using it?
+    */
     $_toPost['accountType'] = $config['accountType'];
     $_toPost['Email'] = $config['Email'];
     $_toPost['Passwd'] = $config['Passwd'];
@@ -85,7 +85,7 @@ class GoogleApiBase {
     $_toPost['source'] = $config['source'];
 
     $this->HttpSocket = new HttpSocket();
-    
+
     // Initializing Cake Session
     $session = new CakeSession();
     $session->start();
@@ -128,22 +128,22 @@ class GoogleApiBase {
       $auth['header'] = "Authorization: GoogleLogin auth=" . $this->_auth_key;
       $result = $HttpSocket->get("http://www.google.com/m8/feeds/contacts/jc.ekinox@gmail.com/full", array(), $auth);
     */
-    if($action != "UPDATE") $url = $url . "&alt=atom";
+    if ($action != "UPDATE") $url = $url . "&alt=atom";
     $header[] = "Authorization: GoogleLogin auth=" . $this->_auth_key;
     $header[] = "GData-Version: 3.0";
-    switch($action){
-      case "CREATE":
+    switch ($action) {
+    case "CREATE":
       break;
-      case "READ":
-        $method = "GET";
+    case "READ":
+      $method = "GET";
       break;
-      case "UPDATE":
-        $header[] = "Content-type: application/atom+xml";
-        $header[] = "X-HTTP-Method-Override: PUT";
-        //$header[] = "If-Match: *";
-        $method = "POST";
+    case "UPDATE":
+      $header[] = "Content-type: application/atom+xml";
+      $header[] = "X-HTTP-Method-Override: PUT";
+      //$header[] = "If-Match: *";
+      $method = "POST";
       break;
-      case "DELETE":
+    case "DELETE":
       break;
     }
     if ($this->_method == 'curl') {
@@ -152,7 +152,9 @@ class GoogleApiBase {
       curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
       curl_setopt($ch, CURLOPT_HTTPHEADER, $header);
       curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
-      if($action == "UPDATE") curl_setopt($ch, CURLOPT_POSTFIELDS,$content);
+      if ($action == "UPDATE") {
+        curl_setopt($ch, CURLOPT_POSTFIELDS,$content);
+      }
       $atom = curl_exec($ch);
       curl_close($ch);
     } else {
@@ -163,16 +165,17 @@ class GoogleApiBase {
                        )
               );
       $context = stream_context_create($opts);
-      if($action == "UPDATE"){
+      if ($action == "UPDATE") {
         $atom = file_put_contents($url, $content, NULL, $context);
-      }else{
+      } else {
         $atom = file_get_contents($url, false, $context);
       }
     }
-    if($action == "UPDATE") debug($atom);
+    if ($action == "UPDATE") {
+      debug($atom);
+    }
     $xml_result =& new XML($atom);
     return Set::reverse($xml_result);
   }
 
 }
-?>
