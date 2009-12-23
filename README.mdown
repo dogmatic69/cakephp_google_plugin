@@ -1,0 +1,64 @@
+## CakePHP Google Api (CakePHP GApi)
+
+This is a set of datasources, models, libs and helpers that will eventually allow you to use all of Google's api's in CakePhp.
+
+### Structure definition of CakePHP GApi (So far)
+
+#### General Google API methods like auth and sendRequest
+
+app/libs/google_api_base.php
+
+#### Specific API interaction classes that extend google_api_base (to be used by datasources)
+
+app/libs/google_api_adsense.php
+app/libs/google_api_adwords.php
+app/libs/google_api_analytics.php
+app/libs/google_api_blogger.php
+app/libs/google_api_calendar.php
+app/libs/google_api_checkout.php
+app/libs/google_api_contacts.php
+app/libs/google_api_finance.php
+
+#### Models
+
+app/models/google_contacts.php
+app/models/google_adwords.php
+app/models/google_analytics.php
+app/models/google_blogger.php
+app/models/google_calendar.php
+app/models/google_checkout.php
+app/models/google_contacts.php
+app/models/google_finance.php
+
+#### Datasources
+
+app/models/datasources/google_contacts_source.php
+app/models/datasources/google_adwords_source.php
+app/models/datasources/google_analytics_source.php
+app/models/datasources/google_blogger_source.php
+app/models/datasources/google_calendar_source.php
+app/models/datasources/google_checkout_source.php
+app/models/datasources/google_contacts_source.php
+app/models/datasources/google_finance_source.php
+
+#### Helpers (dogmatic should define this)
+
+app/views/helpers/chart.php
+app/views/helpers/map.php
+
+## Contributing to CakePHP GApi
+
+If you want to help to contribute in any way, please fork the project on github.
+Once you have forked the project you can commit your code.
+Once you have pushed your changes back to github send a pull request, and your changes will be reviewed and merged in or feedback will be given.
+
+## Issues with CakePHP GApi
+
+For a list of known issues have a look at the issue tracker.
+If you have issues with CakePHP GApi, you can report them at the issue tracker. 
+
+You can look at the wiki for more information on how to use CakePHP GApi, they will all be self containing so that you are able to use them independent form each other.
+
+## Contact Contributors (imekinox, dogmatic)
+
+Look for us on irc.freenode.net #cakephp or send a message on github to us.

@@ -48,13 +48,6 @@
 *
 * Use debug($this->GoogleContacts->_schema); to get structured array
 *
-* Update Sample:
-*
-* $contact = $this->GoogleContacts->find('first');
-* $contact['Name']['fullName'] = "Contact Changed From Cake";
-* $this->GoogleContacts->create($contact);
-* $this->GoogleContacts->save();
-*
 */
 
 class GoogleContactsController extends AppController
