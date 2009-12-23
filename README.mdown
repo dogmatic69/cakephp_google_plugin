@@ -4,16 +4,14 @@ This is a set of datasources, models, libs and helpers that will eventually allo
 
 ### Structure definition of CakePHP GApi (So far)
 
-
 #### General Google API methods like auth and sendRequest
-
 
 ##### app/libs/
            google_api_base.php
 
 #### Specific API interaction classes that extend google_api_base (to be used by datasources)
 
-On app/libs/
+##### app/libs/
            google_api_adsense.php
            google_api_adwords.php
            google_api_analytics.php
@@ -25,30 +23,33 @@ On app/libs/
 
 #### Models
 
-app/models/google_contacts.php
-app/models/google_adwords.php
-app/models/google_analytics.php
-app/models/google_blogger.php
-app/models/google_calendar.php
-app/models/google_checkout.php
-app/models/google_contacts.php
-app/models/google_finance.php
+##### app/models/
+           google_contacts.php
+           google_adwords.php
+           google_analytics.php
+           google_blogger.php
+           google_calendar.php
+           google_checkout.php
+           google_contacts.php
+           google_finance.php
 
 #### Datasources
 
-app/models/datasources/google_contacts_source.php
-app/models/datasources/google_adwords_source.php
-app/models/datasources/google_analytics_source.php
-app/models/datasources/google_blogger_source.php
-app/models/datasources/google_calendar_source.php
-app/models/datasources/google_checkout_source.php
-app/models/datasources/google_contacts_source.php
-app/models/datasources/google_finance_source.php
+##### app/models/datasources/
+           google_contacts_source.php
+           google_adwords_source.php
+           google_analytics_source.php
+           google_blogger_source.php
+           google_calendar_source.php
+           google_checkout_source.php
+           google_contacts_source.php
+           google_finance_source.php
 
 #### Helpers (dogmatic should define this)
 
-app/views/helpers/chart.php
-app/views/helpers/map.php
+##### app/views/helpers/
+           chart.php
+           map.php
 
 ## Contributing to CakePHP GApi
 
