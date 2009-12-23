@@ -64,6 +64,11 @@ If you have issues with CakePHP GApi, you can report them at the issue tracker.
 
 You can look at the wiki for more information on how to use CakePHP GApi, they will all be self containing so that you are able to use them independent form each other.
 
-## Contact Contributors (imekinox, dogmatic)
+## License
+
+The MIT License (http://www.opensource.org/licenses/mit-license.php)
+Redistributions of files must retain the above copyright notice.
+
+## Contact Collaborators (dogmatic, imekinox)
 
 Look for us on irc.freenode.net #cakephp or send a message on github to us.
