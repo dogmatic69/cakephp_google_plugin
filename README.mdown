@@ -6,20 +6,22 @@ This is a set of datasources, models, libs and helpers that will eventually allo
 
 #### General Google API methods like auth and sendRequest
 
-         google_api_base.php
+  app/
+      libs/
+           google_api_base.php
 
 #### Specific API interaction classes that extend google_api_base (to be used by datasources)
 
-app/
-    libs/
-         google_api_adsense.php
-         google_api_adwords.php
-         google_api_analytics.php
-         google_api_blogger.php
-         google_api_calendar.php
-         google_api_checkout.php
-         google_api_contacts.php
-         google_api_finance.php
+  app/
+      libs/
+           google_api_adsense.php
+           google_api_adwords.php
+           google_api_analytics.php
+           google_api_blogger.php
+           google_api_calendar.php
+           google_api_checkout.php
+           google_api_contacts.php
+           google_api_finance.php
 
 #### Models
 
