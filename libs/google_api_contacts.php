@@ -43,13 +43,14 @@ class GoogleApiContacts extends GoogleApiBase
     $schema = array(
                 'google_contacts' => array(
                                      'gd:etag' => array(
-                                               'type' => 'string',
-                                               'null' => true
-                                             ),
-                                     'contact_id' => array(
-                                                     'type' => 'integer',
-                                                     'null' => false
-                                                   ),
+                                                  'type' => 'string',
+                                                  'null' => true
+                                                ),
+                                     'id' => array(
+                                             'type' => 'string',
+                                             'null' => true,
+                                             'length' => 255
+                                           ),
                                      'updated' => array(
                                                   'type' => 'string',
                                                   'null' => true
@@ -195,55 +196,95 @@ class GoogleApiContacts extends GoogleApiBase
   */
   public function toAtom($object) {
     $atom = "<atom:entry xmlns:atom='http://www.w3.org/2005/Atom' xmlns:gd='http://schemas.google.com/g/2005' xmlns:gContact='http://schemas.google.com/contact/2008'>";
-    $atom .= "<id>".$object['id']."</id>";
-    $atom .= "<updated>".$object['updated']."</updated>";
-    $atom .= "<app:edited xmlns:app='http://www.w3.org/2007/app'>".$object['edited']."</app:edited>";
-    $atom .= "<category scheme='".$object['Category']['scheme']."' term='".$object['Category']['term']."'/>";
-    $atom .= "<title>".$object['title']."</title>";
-    $atom .= "<atom:content type='text'>".$object['content']."</atom:content>";
-    foreach ($object['Link'] as $Link) {
-      $atom .= "<link rel='".$Link['rel']."' type='".$Link['type']."' href='".$Link['href']."'/>";
+    if (isset($object['id'])) {
+      $atom .= "<id>".$object['id']."</id>";
     }
-    $atom .= "<gd:name>";
-    $atom .= "<gd:fullName>".$object['Name']['fullName']."</gd:fullName>";
-    $atom .= "</gd:name>";
-    $atom .= "<gContact:nickname>".$object['nickname']."</gContact:nickname>";
-    $atom .= "<gContact:birthday when='".$object['Birthday']['when']."'/>";
-    $atom .= "<gd:organization rel='".$object['Organization']['rel']."'>";
-    $atom .= "<gd:orgName>".$object['Organization']['orgName']."</gd:orgName>";
-    $atom .= "<gd:orgTitle>".$object['Organization']['orgTitle']."</gd:orgTitle>";
-    $atom .= "</gd:organization>";
-    foreach ($object['Email'] as $Email) {
-      $primary = isset($Email['primary'])?"true":"false";
-      $atom .= "<gd:email rel='".$Email['rel']."' address='".$Email['address']."' primary='".$primary."'/>";
+    if (isset($object['updated'])) {
+      $atom .= "<updated>".$object['updated']."</updated>";
     }
-    foreach ($object['Im'] as $Im) {
-      $atom .= "<gd:im address='".$Im['address']."' protocol='".$Im['protocol']."' rel='".$Im['rel']."'/>";
+    if (isset($object['edited'])) {
+      $atom .= "<app:edited xmlns:app='http://www.w3.org/2007/app'>".$object['edited']."</app:edited>";
     }
-    foreach ($object['PhoneNumber'] as $PhoneNumber) {
-      $atom .= "<gd:phoneNumber rel='".$PhoneNumber['rel']."'>".$PhoneNumber['value']."</gd:phoneNumber>";
+    if (isset($object['Category'])) {
+      $atom .= "<category scheme='".$object['Category']['scheme']."' term='".$object['Category']['term']."'/>";
     }
-    foreach ($object['StructuredPostalAddress'] as $StructuredPostalAddress) {
-      $atom .= "<gd:structuredPostalAddress rel='".$StructuredPostalAddress['rel']."'>";
-      $atom .= "<gd:formattedAddress>".$StructuredPostalAddress['formattedAddress']."</gd:formattedAddress>";
-      $atom .= "</gd:structuredPostalAddress>";
+    if (isset($object['title'])) {
+      $atom .= "<title>".$object['title']."</title>";
     }
-    foreach ($object['Event'] as $Event) {
-      $atom .= "<gContact:event rel='".$Event['rel']."'>";
-      $atom .= "<gd:when startTime='".$Event['When']['startTime']."'/>";
-      $atom .= "</gContact:event>";
+    if (isset($object['content'])) {
+      $atom .= "<atom:content type='text'>".$object['content']."</atom:content>";
     }
-    foreach ($object['Relation'] as $Relation) {
-      $atom .= "<gContact:relation rel='".$Relation['rel']."'>".$Relation['value']."</gContact:relation>";
+    if (isset($object['Link'])) {
+      foreach ($object['Link'] as $Link) {
+        $atom .= "<link rel='".$Link['rel']."' type='".$Link['type']."' href='".$Link['href']."'/>";
+      }
     }
-    foreach ($object['UserDefinedField'] as $UserDefinedField) {
-      $atom .= "<gContact:userDefinedField key='".$UserDefinedField['key']."' value='".$UserDefinedField['value']."'/>";
+    if (isset($object['Name'])) {
+      $atom .= "<gd:name>";
+      $atom .= "<gd:fullName>".$object['Name']['fullName']."</gd:fullName>";
+      $atom .= "</gd:name>";
     }
-    foreach ($object['Website'] as $Website) {
-      $atom .= "<gContact:website href='".$Website['href']."' rel='".$Website['rel']."'/>";
+    if (isset($object['nickname'])) {
+      $atom .= "<gContact:nickname>".$object['nickname']."</gContact:nickname>";
     }
-    foreach ($object['GroupMembershipInfo'] as $GroupMembershipInfo) {
-      $atom .= "<gContact:groupMembershipInfo deleted='".$GroupMembershipInfo['deleted']."' href='".$GroupMembershipInfo['href']."'/>";
+    if (isset($object['Birthday'])) {
+      $atom .= "<gContact:birthday when='".$object['Birthday']['when']."'/>";
+    }
+    if (isset($object['Organization'])) {
+      $atom .= "<gd:organization rel='".$object['Organization']['rel']."'>";
+      $atom .= "<gd:orgName>".$object['Organization']['orgName']."</gd:orgName>";
+      $atom .= "<gd:orgTitle>".$object['Organization']['orgTitle']."</gd:orgTitle>";
+      $atom .= "</gd:organization>";
+    }
+    if (isset($object['Email'])) {
+      foreach ($object['Email'] as $Email) {
+        $primary = isset($Email['primary'])?"true":"false";
+        $atom .= "<gd:email rel='".$Email['rel']."' address='".$Email['address']."' primary='".$primary."'/>";
+      }
+    }
+    if (isset($object['Im'])) {
+      foreach ($object['Im'] as $Im) {
+        $atom .= "<gd:im address='".$Im['address']."' protocol='".$Im['protocol']."' rel='".$Im['rel']."'/>";
+      }
+    }
+    if (isset($object['PhoneNumber'])) {
+      foreach ($object['PhoneNumber'] as $PhoneNumber) {
+        $atom .= "<gd:phoneNumber rel='".$PhoneNumber['rel']."'>".$PhoneNumber['value']."</gd:phoneNumber>";
+      }
+    }
+    if (isset($object['StructuredPostalAddress'])) {
+      foreach ($object['StructuredPostalAddress'] as $StructuredPostalAddress) {
+        $atom .= "<gd:structuredPostalAddress rel='".$StructuredPostalAddress['rel']."'>";
+        $atom .= "<gd:formattedAddress>".$StructuredPostalAddress['formattedAddress']."</gd:formattedAddress>";
+        $atom .= "</gd:structuredPostalAddress>";
+      }
+    }
+    if (isset($object['Event'])) {
+      foreach ($object['Event'] as $Event) {
+        $atom .= "<gContact:event rel='".$Event['rel']."'>";
+        $atom .= "<gd:when startTime='".$Event['When']['startTime']."'/>";
+        $atom .= "</gContact:event>";
+      }
+    }
+    if (isset($object['Relation'])) {
+      foreach ($object['Relation'] as $Relation) {
+        $atom .= "<gContact:relation rel='".$Relation['rel']."'>".$Relation['value']."</gContact:relation>";
+      }
+    }
+    if (isset($object['UserDefinedField'])) {
+      foreach ($object['UserDefinedField'] as $UserDefinedField) {
+        $atom .= "<gContact:userDefinedField key='".$UserDefinedField['key']."' value='".$UserDefinedField['value']."'/>";
+      }
+    }
+    if (isset($object['Website'])) {
+      foreach ($object['Website'] as $Website) {
+        $atom .= "<gContact:website href='".$Website['href']."' rel='".$Website['rel']."'/>";
+      }
+    }
+    if (isset($object['GroupMembershipInfo'])) {
+      foreach ($object['GroupMembershipInfo'] as $GroupMembershipInfo) {
+        $atom .= "<gContact:groupMembershipInfo deleted='".$GroupMembershipInfo['deleted']."' href='".$GroupMembershipInfo['href']."'/>";
+      }
     }
     $atom .= "</atom:entry>";
     return $atom;

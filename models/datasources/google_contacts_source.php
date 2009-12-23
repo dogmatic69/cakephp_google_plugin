@@ -88,7 +88,7 @@ class GoogleContactsSource extends DataSource {
   */
   public function read($model, $queryData = array()) {
     if (isset($queryData['conditions']['id'])) {
-      return $this->GoogleApiContacts->sendRequest($this->read_uri . "/" . $queryData['conditions']['id'], "READ");
+      return $this->findById($queryData['conditions']['id']);
     } else {
       $args['max-results'] = ($queryData['limit'] != null)?$queryData['limit']:'25';
 
@@ -103,7 +103,9 @@ class GoogleContactsSource extends DataSource {
           $args[$key] = $value;
         }
       }
-
+      if (isset($queryData['conditions']['query'])) {
+        $args['q'] = $queryData['conditions']['query'];
+      }
       $query = $this->read_uri . "?" . http_build_query($args, "", "&");
       $result = $this->GoogleApiContacts->sendRequest($query, "READ");
       if (isset($queryData['fields']['COUNT']) && $queryData['fields']['COUNT'] == 1) {
@@ -129,7 +131,10 @@ class GoogleContactsSource extends DataSource {
   * @access public
   */
   public function create($model, $fields = array(), $values = array()) {
-    debug("create");
+    $baseObject = $model->data['GoogleContacts'];
+    debug($baseObject);
+    // $atom = $this->GoogleApiContacts->toAtom($baseObject);
+    // return $this->GoogleApiContacts->sendRequest($this->read_uri, "CREATE", $atom);
   }
 
   /**
@@ -188,17 +193,10 @@ class GoogleContactsSource extends DataSource {
   * @access public
   */
   public function query($query, $params, $model) {
-    debug($query);
     switch ($query) {
-      /**
-      * @todo not working.
-      */
     case "findById":
-      $q = $this->read_uri . "/" . $params[0];
-      debug($q);
-      $result = $this->sendRequest($q, "READ");
-      debug($result);
-      return $result['Feed']['Entry'];
+      $result = $this->GoogleApiContacts->sendRequest($params[0], "READ");
+      return $result['Entry'];
       break;
     }
   }

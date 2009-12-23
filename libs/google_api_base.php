@@ -74,9 +74,10 @@ class GoogleApiBase {
   * @access public
   */
   public function __construct($config) {
-    $_toPost['accounttype'] = $config['accounttype'];
-    $_toPost['email'] = $config['email'];
-    $_toPost['passwd'] = $config['passwd'];
+    //_toPost keys are case sensitive for google api, changin them will result in bad authentication
+    $_toPost['accountType'] = $config['accounttype'];
+    $_toPost['Email'] = $config['email'];
+    $_toPost['Passwd'] = $config['passwd'];
     $_toPost['service'] = $config['service'];
     $_toPost['source'] = $config['source'];
 
@@ -124,11 +125,14 @@ class GoogleApiBase {
       $auth['header'] = "Authorization: GoogleLogin auth=" . $this->_auth_key;
       $result = $HttpSocket->get("http://www.google.com/m8/feeds/contacts/jc.ekinox@gmail.com/full", array(), $auth);
     */
-    if ($action != "UPDATE") $url = $url . "&alt=atom";
     $header[] = "Authorization: GoogleLogin auth=" . $this->_auth_key;
     $header[] = "GData-Version: 3.0";
     switch ($action) {
     case "CREATE":
+      $method = "POST";
+      $header[] = "Content-type: application/atom+xml";
+      //$header[] = "Content-length: 1";
+      $header[] = "If-Match: *";
       break;
     case "READ":
       $method = "GET";
@@ -167,6 +171,7 @@ class GoogleApiBase {
         $atom = file_get_contents($url, false, $context);
       }
     }
+    debug("GOOGLE RESPONSE: " . $atom);
     $xml_result =& new XML($atom);
     return Set::reverse($xml_result);
   }

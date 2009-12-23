@@ -20,4 +20,10 @@ class GoogleContacts extends AppModel
   var $name        = 'GoogleContacts';
   var $useDbConfig = 'google_contacts';
   var $primaryKey  = 'id';
+  
+  public function create($model){
+    if(!isset($model['updated'])){
+      $this->data[$this->name]['updated'] = "";
+    }
+  }
 }
