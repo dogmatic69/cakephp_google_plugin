@@ -4,7 +4,9 @@ This is a set of datasources, models, libs and helpers that will eventually allo
 
 ### Structure definition of CakePHP GApi (So far)
 
+
 #### General Google API methods like auth and sendRequest
+
 
 ##### app/libs/
            google_api_base.php
