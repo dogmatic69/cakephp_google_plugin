@@ -6,7 +6,7 @@ This is a set of datasources, models, libs and helpers that will eventually allo
 
 #### General Google API methods like auth and sendRequest
 
-On app/libs/
+##### app/libs/
            google_api_base.php
 
 #### Specific API interaction classes that extend google_api_base (to be used by datasources)
