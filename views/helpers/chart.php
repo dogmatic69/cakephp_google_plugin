@@ -682,7 +682,7 @@
                     return false;
                 }
             }
-            else if ( !in_array( $name, array_flip( $this->chartTypes ) ) )
+            else if ( !isset( $this->chartTypes[$name] ) )
             {
                 $this->__errors[] = __( 'Incorect chart type', true );
                 return false;
