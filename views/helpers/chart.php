@@ -137,7 +137,12 @@
                             'size'    => true,
                             'z-index' => true
                         )
-                    )
+                    ),
+                    'axis_type' => true,
+                    'axis_labels' => true,
+                    'axis_label_positions' => true,
+                    'axis_range' => array(0 => array('start' => true, 'end' => true, 'interval' => false)),
+                    'axis_styles' => array(0 => array('color' => true, 'font-size' => false, 'alignment' => false, 'drawing_control' => false, 'tick_color' => false))
 
             ),
 
@@ -173,8 +178,22 @@
          */
         var $cache = true;
 
+		/**
+		* Path to store cached images
+		*
+		* @var string
+		* @access public
+		*/
+		var $cachePath = '';
 
-
+		/**
+		* Path to use when displaying cached images
+		*
+		* @var string
+		* @access public
+		*/
+		var $cacheImagePath = '';
+		
         /**
         * Do not modify these
         */
@@ -259,8 +278,8 @@
                 'format' => ''
             ),
             'scale' => array(
-                'code' => '',
-                'seperator' => ''
+                'code' => 'chds=',
+                'seperator' => ','
             ),
             'title' => array(         //done
                 'code' => 'chtt=',
@@ -276,6 +295,31 @@
             ),
             'orientation' => array(
                 'code' => 'chp='
+            ),
+            'axis_type' => array(
+            	'code' => 'chxt=',
+            	'seperator' => ',',
+            	'valid_values' => array('x', 't', 'y', 'r')
+            ),
+            'axis_labels' => array(
+            	'code' => 'chxl=',
+            	'seperator' => '|',
+            	'index_title_seperator' => ':'
+            ),
+            'axis_label_positions' => array(	
+            	'code' => 'chxp',
+            	'seperator' => ',',
+            	'index_seperator' => '|'
+            ),
+            'axis_range' => array(
+            	'code' => 'chxr=',
+            	'seperator' => ',',
+            	'index_seperator' => '|'
+            ),
+            'axis_styles' => array(
+            	'code' => 'chxs=',
+            	'seperator' => ',',
+            	'index_seperator' => '|'
             )
         );
 
@@ -319,6 +363,19 @@
                 'qr_code'    => 'cht=qr'
         );
 
+        public function __construct($options = array())
+		{
+			$default = array(
+				'cachePath' => APP.'plugins'.DS.'google'.DS.'vendors'.DS.'img'.DS.'chart_cache'.DS,
+				'cacheImagePath' => '/google/img/chart_cache/'
+			);
+			
+			$options = array_merge($default, $options);
+			
+			$this->cachePath = $options['cachePath'];
+			$this->cacheImagePath = $options['cacheImagePath'];
+		}
+		
         public function test( $name = 'pie3d' )
         {
             switch( $name )
@@ -340,7 +397,7 @@
             } // switch
         }
 
-        function display( $name = null, $data = array() )
+        function display( $name = null, $data = array(), $absolute = false )
         {
             // used for cache
             $this->originalData = array( 'name' => $name, 'data' => $data );
@@ -357,9 +414,9 @@
                 return false;
             }
 
-            if ( $this->cache && $this->__checkCache() )
+            if ( $this->cache && $this->__checkCache($absolute) )
             {
-                return $this->__checkCache();
+                return $this->__checkCache($absolute);
             }
 
             $this->__reset();
@@ -390,7 +447,7 @@
                         break;
 
                     case 'orientation':
-                        $this->__setOrientaion( $value );
+						$this->__setOrientaion( $value );
                         break;
 
                     case 'size':
@@ -404,7 +461,18 @@
                     case 'fill':
                         $this->__setFill( $key, $value );
                         break;
-
+                        
+                    case 'scale':
+                    	$this->__setScale( $value );
+                    	break;
+                    	
+                    case 'axis_type':
+                    case 'axis_labels':
+                    case 'axis_label_positions':
+                    case 'axis_range':
+                    case 'axis_style':
+                    	$this->__setAxis($key, $value);
+                    	break;
 
                 } // switch
             }
@@ -414,31 +482,34 @@
 
         function __checkCache()
         {
-            $path = APP.'plugins'.DS.'google'.DS.'vendors'.DS.'img'.DS.'chart_cache'.DS;
-            $file = sha1( $this->originalData['name'].serialize( $this->originalData['data'] ) ).'.jpg';
-
-            if ( is_file( $path.$file ) )
+            $file = sha1( $this->originalData['name'].serialize( $this->originalData['data'] ) ).'.png';
+		
+            if ( is_file( $this->cachePath.$file ) )
             {
-                return $this->Html->image( '/google/img/chart_cache/'.$file );
+				return $this->Html->image($this->cacheImagePath.$file );
             }
-
-            $this->__errors[] = 'File <b>'.$path.$file.'</b> does not exist';
+			else
+			{
+				$this->__errors[] = 'File <b>'.$this->cachePath.$file.'</b> does not exist';
+			}
         }
 
         function __writeCache( $url )
         {
-            $path = APP.'plugins'.DS.'google'.DS.'vendors'.DS.'img'.DS.'chart_cache'.DS;
-            $file = sha1( $this->originalData['name'].serialize( $this->originalData['data'] ) ).'.jpg';
+            $file = sha1( $this->originalData['name'].serialize( $this->originalData['data'] ) ).'.png';
 
-            $contents = file_get_contents( $url );
-
-            $fp = fopen( $path.$file, 'w' );
-            fwrite( $fp, $contents );
-            fclose( $fp );
-
-            if ( !is_file( $path.$file ) )
+            if(is_writable($this->cachePath))
             {
-                $this->__errors[] = __( 'Could not create the cache file', true );
+	            $contents = file_get_contents( $url );
+	
+	            $fp = fopen( $this->cachePath.$file, 'w' );
+	            fwrite( $fp, $contents );
+	            fclose( $fp );
+	
+	            if ( !is_file( $this->cachePath.$file ) )
+	            {
+	                $this->__errors[] = __( 'Could not create the cache file', true );
+	            }
             }
         }
 
@@ -540,7 +611,53 @@
             }
             $this->__setData( 'title', explode( ' ', $title ) );
         }
+        
+        function __setScale($value)
+        {        	
+        	$this->__setData('scale', implode($this->map['scale']['seperator'], Set::flatten($value)));
+        }
 
+        function __setAxis($type, $value)
+        {
+        	$data = '';
+        
+        	$isMultiDim = false;
+        	foreach($value as $values)
+        	{
+        		if(is_array($values))
+        		{
+        			$isMultiDim = true;
+        			break;
+        		}	
+        	}
+        	
+			if($isMultiDim)
+        	{
+        		foreach($value as $index => $values)
+        		{
+        			if(isset($this->map[$type]['index_title_seperator']))
+        			{
+        				$data .= $index . $this->map[$type]['index_title_seperator'];
+        			}
+        			elseif(isset($this->map[$type]['index_seperator']))
+        			{
+        				$data .= $index . $this->map[$type]['seperator'];
+        			}
+        			
+        			$data .= implode($this->map[$type]['seperator'], $values);
+        			
+        			if(isset($this->map[$type]['index_seperator']) && $index < max(array_keys($value)))
+        				$data .= $this->map[$type]['index_seperator'];
+        		}
+        	}
+        	else
+        	{
+        		$data = implode($this->map[$type]['seperator'], $value);
+        	}
+        	
+        	$this->__setData($type, $data);
+        }
+        
         function __render( $data )
         {
             $data['html'] = array();
@@ -560,7 +677,8 @@
 
             $graph = $this->Html->image(
                 $this->output,
-                $data['html']
+                $data['html'],
+                array('escape' => false)
             );
 
             if ( $this->cache )
