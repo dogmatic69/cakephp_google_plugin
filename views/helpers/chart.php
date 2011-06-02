@@ -263,8 +263,9 @@
 		        'seperator' => 'x'
 		    ),
 		    'colors' => array(
-		        'code' => '',
-		        'seperator' => ''
+		        'code' => 'chco=',
+				  'seperator' => ',',
+		        'slice_separator' => '|'
 		    ),
 		    'solid_fill' => array(  //done
 		        'code' => 'chf=',
@@ -468,6 +469,10 @@
 					case 'scale':
 						$this->__setScale( $value );
 						break;
+
+					case 'colors':
+						$this->__setColors($value);
+					break;
 
 					case 'axis_type':
 					case 'axis_labels':
@@ -819,6 +824,46 @@
 			}
 
 			return true;
+		}
+
+/**
+ * Sets the colors for the chart
+ *
+ * Colors can be set by individual slice/piece, or by series. If array item is
+ * an array, it is seen as a series, otherwise a slice.
+ *
+ * {{{
+ * // two colors, one red and one blue
+ * array('FF0000', '0000FF');
+ *
+ * // two series, one red and one blue
+ * array(
+ *  array(
+ *   'FF0000'
+ *  ),
+ *  array(
+ *   '0000FF'
+ *  )
+ * );
+ * }}}
+ *
+ * @param array $data The data passed in the `colors` key
+ * @see http://code.google.com/apis/chart/docs/gallery/pie_charts.html#chart_colors
+ */
+		function __setColors($data = array()) {
+			$series = false;
+			foreach ($data as &$color) {
+				if (is_array($color)) {
+					$color = implode($this->map['colors']['slice_separator'], $color);
+					$series = true;
+				}
+			}
+			$reset = $this->map['colors']['seperator'];
+			if (!$series) {
+				$this->map['colors']['seperator'] = $this->map['colors']['slice_separator'];
+			}
+			$this->__setData('colors', $data);
+			$this->map['colors']['seperator'] = $reset;
 		}
 
 		function __autoColor()
